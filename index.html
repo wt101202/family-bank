@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#064E3B">
+<title>Family Bank</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--g50:#ECFDF5;--g100:#D1FAE5;--g200:#A7F3D0;--g300:#6EE7B7;--g400:#34D399;--g500:#10B981;--g600:#059669;--g700:#047857;--g800:#065F46;--g900:#064E3B;
+--r50:#FEF2F2;--r100:#FEE2E2;--r200:#FECACA;--r400:#F87171;--r500:#EF4444;--r600:#DC2626;--r700:#B91C1C;
+--o500:#F97316;--o600:#EA580C;--y50:#FFFBEB;--y200:#FDE68A;
+--b500:#3B82F6;--b600:#2563EB;
+--n50:#F9FAFB;--n100:#F3F4F6;--n200:#E5E7EB;--n300:#D1D5DB;--n400:#9CA3AF;--n500:#6B7280;--n600:#4B5563;--n700:#374151;--n800:#1F2937;--n900:#111827;
+}
+html{-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;background:#F6F8F7;color:var(--n800);min-height:100vh;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px}
+input[type=number]{-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+.app{max-width:760px;margin:0 auto;padding:0 14px 60px}
+.hidden{display:none!important}
+
+/* ── Setup ── */
+.setup-bg{position:fixed;inset:0;background:linear-gradient(145deg,var(--g900),var(--g800) 45%,var(--g700));display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;overflow-y:auto}
+.setup{background:white;border-radius:26px;padding:40px 32px;max-width:500px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.35);margin:auto}
+.brand{font-size:11px;font-weight:700;color:var(--g600);letter-spacing:2.5px;text-transform:uppercase;text-align:center}
+.setup h1{font-size:28px;font-weight:800;color:var(--n900);text-align:center;margin-top:6px;letter-spacing:-.5px}
+.setup .sub{font-size:14px;color:var(--n500);text-align:center;margin-top:8px;line-height:1.5}
+.field{margin-top:18px}
+.field label,.lbl{display:block;font-size:11px;font-weight:700;color:var(--n500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.inp{width:100%;padding:12px 14px;border:1.5px solid var(--n200);border-radius:12px;outline:none;background:white;color:var(--n900);transition:border .15s}
+.inp:focus{border-color:var(--g500)}
+textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
+.kid-row{display:grid;grid-template-columns:1.6fr .8fr 1fr 34px;gap:8px;align-items:end;margin-bottom:8px}
+.kid-row .lbl{font-size:10px;margin-bottom:4px}
+.kid-row .inp{padding:10px 12px}
+.icon-btn{width:34px;height:42px;border-radius:10px;background:var(--r50);color:var(--r500);font-size:18px;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:var(--r100)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;border-radius:12px;font-size:14px;font-weight:700;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--g600);color:white;box-shadow:0 4px 14px rgba(5,150,105,.25)}
+.btn-primary:hover{background:var(--g700)}
+.btn-soft{background:var(--g50);color:var(--g700)}
+.btn-soft:hover{background:var(--g100)}
+.btn-ghost{background:var(--n100);color:var(--n700)}
+.btn-ghost:hover{background:var(--n200)}
+.btn-danger{background:var(--r600);color:white}
+.btn-block{width:100%}
+.btn-sm{padding:8px 14px;font-size:12px;border-radius:10px}
+.note{font-size:12px;color:var(--n400);text-align:center;margin-top:14px;line-height:1.5}
+
+/* ── Header ── */
+.hdr{background:linear-gradient(135deg,var(--g900) 0%,var(--g800) 35%,var(--g700) 75%,var(--g600) 100%);margin:0 -14px;padding:22px 22px 62px;border-radius:0 0 30px 30px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;max-width:720px;margin:0 auto}
+.hdr .brand{color:rgba(255,255,255,.55);text-align:left}
+.hdr h1{font-size:26px;font-weight:800;color:white;margin-top:2px;letter-spacing:-.5px}
+.gear{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.14);color:white;display:flex;align-items:center;justify-content:center;font-size:18px}
+.gear:hover{background:rgba(255,255,255,.24)}
+.kids{display:flex;gap:8px;margin:18px auto 0;max-width:720px;flex-wrap:wrap}
+.kid{padding:9px 22px;border-radius:100px;font-size:14px;font-weight:700;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);transition:all .2s}
+.kid.on{background:white;color:var(--g800);box-shadow:0 4px 14px rgba(0,0,0,.15)}
+
+/* ── Cards ── */
+.card{background:white;border-radius:20px;padding:22px 24px;box-shadow:0 1px 3px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.04);margin-top:14px;position:relative}
+.card h2{font-size:17px;font-weight:800;color:var(--n900);letter-spacing:-.2px}
+.card .sub{font-size:12px;color:var(--n400);margin-top:2px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+
+/* ── Hero ── */
+.hero{margin-top:-44px;text-align:center;padding:26px 22px 22px}
+.hero .who{font-size:13px;color:var(--n400);font-weight:600}
+.hero .big{font-size:54px;font-weight:800;color:var(--g600);letter-spacing:-3px;line-height:1.1;margin-top:2px}
+.hero .split{font-size:13px;color:var(--n500);margin-top:4px}
+.hero .split b{color:var(--g600);font-weight:700}
+.stats{display:flex;justify-content:center;gap:0;margin-top:18px;border-top:1px solid var(--n100);padding-top:16px}
+.stat{flex:1;text-align:center}
+.stat+.stat{border-left:1px solid var(--n100)}
+.stat .k{font-size:11px;color:var(--n400);font-weight:600}
+.stat .v{font-size:19px;font-weight:800;margin-top:2px;letter-spacing:-.5px}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;margin-top:14px;background:var(--n100);border-radius:14px;padding:4px}
+.tab{flex:1;padding:11px;border-radius:11px;font-size:14px;font-weight:700;text-align:center;color:var(--n500);transition:all .15s}
+.tab.on{background:white;color:var(--n900);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+
+/* ── Segmented ── */
+.seg{display:inline-flex;background:var(--n100);border-radius:10px;padding:3px;gap:2px}
+.seg button{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;color:var(--n500);transition:all .15s}
+.seg button.on{background:white;color:var(--n900);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg.spend button.on{color:var(--r600)}
+.seg.earn button.on{color:var(--g600)}
+
+/* ── Chart ── */
+.chart{position:relative;width:100%;height:280px;margin-top:14px}
+.chart canvas{position:absolute;inset:0;width:100%!important;height:100%!important;touch-action:pan-y}
+.tip{position:absolute;background:white;border-radius:12px;padding:10px 14px;box-shadow:0 8px 28px rgba(0,0,0,.14);pointer-events:none;opacity:0;transition:opacity .12s;z-index:5;min-width:150px;font-size:12px;line-height:1.5}
+.tip.on{opacity:1}
+.tip b{display:block;font-size:13px;color:var(--n900);margin-bottom:3px}
+.tip .l{display:flex;justify-content:space-between;gap:14px}
+.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--n500)}
+.legend i{display:inline-block;width:22px;height:4px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dash{background:repeating-linear-gradient(90deg,var(--n400) 0 5px,transparent 5px 8px);height:2px}
+.caption{margin-top:12px;padding:12px 14px;background:var(--n50);border-radius:12px;font-size:13px;color:var(--n600);line-height:1.5}
+.caption b{color:var(--n900)}
+.caption .bad{color:var(--r600);font-weight:700}
+
+/* ── Spend ── */
+.spendcard.on{background:linear-gradient(135deg,#FFFBEB,#FFF7ED);border:1.5px solid var(--y200)}
+.spend-amt{font-size:46px;font-weight:800;color:var(--o600);letter-spacing:-2px;text-align:center;margin:12px 0 4px}
+.slider{width:100%;accent-color:var(--o600);height:8px;cursor:pointer}
+.slider-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--n400);margin-top:2px}
+.erase{margin-top:18px;border-radius:16px;overflow:hidden;background:white;border:1.5px solid var(--r200)}
+.erase .top{padding:18px 20px;text-align:center;font-size:15px;color:var(--n700);line-height:1.5}
+.erase .top b{color:var(--r600);font-size:30px;display:block;letter-spacing:-1.5px;line-height:1.2;margin:4px 0}
+.erase .bar{background:var(--r600);color:white;padding:11px;text-align:center;font-size:13px;font-weight:600}
+.erase .bar b{font-size:17px;font-weight:800;margin:0 4px}
+
+/* ── Milestones ── */
+.miles{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
+.mile{background:var(--n50);border-radius:14px;padding:14px 6px;text-align:center;border:1px solid var(--n100);position:relative}
+.mile.goal{border-color:var(--g200);background:linear-gradient(180deg,var(--g50),var(--n50))}
+.mile .tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--g600);color:white;font-size:9px;font-weight:800;padding:2px 8px;border-radius:100px;letter-spacing:.5px;text-transform:uppercase}
+.mile .a{font-size:11px;color:var(--n400);font-weight:600}
+.mile .v{font-size:17px;font-weight:800;color:var(--g600);margin-top:6px;letter-spacing:-.5px}
+.mile .e{font-size:11px;font-weight:700;color:var(--r500);margin-top:3px}
+
+/* ── Earn card ── */
+.earncard pre{white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.6;color:var(--n700);margin-top:10px}
+.earncard .empty{font-size:13px;color:var(--n400);margin-top:8px;line-height:1.5}
+
+/* ── History ── */
+.ledger{margin-top:8px}
+.tx{display:grid;grid-template-columns:52px 1fr auto;gap:12px;padding:13px 2px;border-bottom:1px solid var(--n100);align-items:center}
+.tx .d{font-size:11px;color:var(--n400);font-weight:600;line-height:1.3}
+.tx .t{font-size:14px;color:var(--n800);font-weight:600}
+.tx .er{display:inline-block;margin-top:3px;font-size:11px;font-weight:700;color:var(--r600);background:var(--r50);padding:2px 8px;border-radius:100px}
+.tx .amt{font-size:15px;font-weight:800;text-align:right}
+.tx .amt.earn{color:var(--g600)}.tx .amt.spend{color:var(--r600)}
+.tx .x{color:var(--n300);font-size:16px;padding:2px 6px;border-radius:6px}
+.tx .x:hover{background:var(--r50);color:var(--r500)}
+.empty-state{text-align:center;padding:36px 10px;color:var(--n400);font-size:14px;line-height:1.5}
+.form{background:var(--n50);border-radius:16px;padding:18px;margin-top:14px;border:1px solid var(--n100)}
+.form .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form .grid .full{grid-column:1/-1}
+.receipt{margin-top:14px;background:white;border:1.5px solid var(--r200);border-radius:14px;padding:14px 16px}
+.receipt .h{font-size:12px;font-weight:700;color:var(--r600);text-transform:uppercase;letter-spacing:.5px}
+.receipt .lines{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px}
+.receipt .lines span{font-size:14px;color:var(--n700)}
+.receipt .lines b{color:var(--r600)}
+.cost-line{margin-top:10px;font-size:13px;color:var(--n500);text-align:center}
+.cost-line b{color:var(--r600)}
+
+/* ── Learn ── */
+.learn p{font-size:15px;line-height:1.65;color:var(--n700);margin-top:10px}
+.learn p b{color:var(--n900)}
+.stepper{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px}
+.stepper button{width:40px;height:40px;border-radius:12px;background:var(--n100);font-size:18px;font-weight:800;color:var(--n700)}
+.stepper button:hover{background:var(--n200)}
+.stepper .yr{font-size:15px;font-weight:800;color:var(--n900);min-width:80px;text-align:center}
+.snow-say{margin-top:12px;background:var(--g50);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.55;color:var(--n800);text-align:center;min-height:72px;display:flex;align-items:center;justify-content:center}
+.snow-say b{color:var(--g700)}
+.bigstat{display:flex;gap:10px;margin-top:14px}
+.bigstat div{flex:1;background:var(--n50);border-radius:14px;padding:14px;text-align:center}
+.bigstat .k{font-size:11px;color:var(--n400);font-weight:600;line-height:1.3}
+.bigstat .v{font-size:22px;font-weight:800;color:var(--n900);margin-top:4px;letter-spacing:-.5px}
+.bigstat .v.red{color:var(--r600)}.bigstat .v.green{color:var(--g600)}
+
+/* ── Settings modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(6,78,59,.55);backdrop-filter:blur(4px);z-index:900;display:flex;align-items:flex-start;justify-content:center;padding:20px 12px;overflow-y:auto}
+.modal{background:white;border-radius:24px;padding:28px 26px;max-width:560px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.3);margin:auto}
+.modal h2{font-size:22px;font-weight:800;color:var(--n900)}
+.sect{margin-top:22px;padding-top:18px;border-top:1px solid var(--n100)}
+.sect h3{font-size:13px;font-weight:800;color:var(--n900);text-transform:uppercase;letter-spacing:.6px}
+.sect .hint{font-size:12px;color:var(--n400);margin-top:3px;line-height:1.45}
+.presets{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.preset{padding:8px 14px;border-radius:100px;font-size:12px;font-weight:700;background:var(--n100);color:var(--n600)}
+.preset.on{background:var(--g600);color:white}
+.rate-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.rate-row .inp{width:100px;text-align:center;font-weight:700}
+.miles-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.miles-row .inp{text-align:center;font-weight:700;padding:10px 6px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:24px}
+.sharebox{display:flex;gap:8px;margin-top:10px}
+.sharebox .inp{font-size:13px;color:var(--n500)}
+
+.foot{text-align:center;padding:26px 0 10px;color:var(--n300);font-size:11px;line-height:1.6}
+.foot a{color:var(--n400)}
+
+@media(max-width:600px){
+  .hdr{padding:18px 16px 58px}
+  .card{padding:18px 16px;border-radius:16px}
+  .hero .big{font-size:44px}
+  .stat .v{font-size:16px}
+  .miles{grid-template-columns:repeat(3,1fr)}
+  .miles-row{grid-template-columns:repeat(3,1fr)}
+  .kid-row{grid-template-columns:1.4fr .7fr .9fr 34px;gap:6px}
+  .setup{padding:30px 20px}
+  .modal{padding:22px 18px}
+  .tab{font-size:13px;padding:10px 6px}
+  .chart{height:240px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+/*ENGINE-START*/
+// ═══════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════
+// S&P 500 total return (price + reinvested dividends), % by calendar year.
+// Source: slickcharts.com/sp500/returns (S&P Dow Jones Indices), verified 2026-10-08.
+// 1926-2025: 100 years, CAGR 10.5%, 26 negative years.
+const SP_START=1926;
+const SP=[11.62,37.49,43.61,-8.42,-24.90,-43.34,-8.19,53.99,-1.44,47.67,33.92,-35.03,31.12,-0.41,-9.78,-11.59,20.34,25.90,19.75,36.44,-8.07,5.71,5.50,18.79,31.71,24.02,18.37,-0.99,52.62,31.56,6.56,-10.78,43.36,11.96,0.47,26.89,-8.73,22.80,16.48,12.45,-10.06,23.98,11.06,-8.50,3.86,14.30,19.00,-14.69,-26.47,37.23,23.93,-7.16,6.57,18.61,32.50,-4.92,21.55,22.56,6.27,31.73,18.67,5.25,16.61,31.69,-3.10,30.47,7.62,10.08,1.32,37.58,22.96,33.36,28.58,21.04,-9.10,-11.89,-22.10,28.68,10.88,4.91,15.79,5.49,-37.00,26.46,15.06,2.11,16.00,32.39,13.69,1.38,11.96,21.83,-4.38,31.49,18.40,28.71,-18.11,26.29,25.02,17.88];
+const SP_END=SP_START+SP.length-1;
+const SP_CAGR=Math.pow(SP.reduce((g,r)=>g*(1+r/100),1),1/SP.length)-1;
+const SP_NEG=SP.filter(r=>r<0).length;
+
+const STORAGE_KEY="familybank.v3";
+const LEGACY_KEY="family_bank_data";
+const DEFAULT_MILES=[16,18,21,30,65];
+const PRESETS=[{l:"Savings 4%",r:.04},{l:"Steady 7%",r:.07},{l:"Stock market 10%",r:.10}];
+
+// ═══════════════════════════════════════════════════════════
+//  MATH / LEDGER ENGINE  (pure; no DOM)
+// ═══════════════════════════════════════════════════════════
+const DAY=86400000;
+const parseD=s=>new Date(s+"T12:00:00");
+const isoD=d=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),dd=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${dd}`};
+const todayISO=()=>isoD(new Date());
+const yearsBetween=(a,b)=>(parseD(b)-parseD(a))/DAY/365.25;
+const grow=(v,rate,yrs)=>v*Math.pow(1+rate,Math.max(0,yrs));
+
+// age in fractional years at a given ISO date, from "YYYY-MM" born
+function ageAt(born,iso){const [by,bm]=born.split("-").map(Number);const d=parseD(iso);return (d.getFullYear()-by)+(d.getMonth()+1-bm)/12+(d.getDate()-1)/365.25}
+const ageNow=born=>ageAt(born,todayISO());
+const bornFromAge=age=>{const d=new Date();const y=d.getFullYear()-Math.floor(age);const m=d.getMonth()+1-Math.round((age%1)*12);const dt=new Date(y,m-1,1);return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}`};
+
+const sortTx=txns=>[...txns].sort((a,b)=>a.date.localeCompare(b.date)||(a.seq||0)-(b.seq||0));
+
+// Simulate the ledger with continuous compounding at `rate` between events.
+// opts.noSpend -> ignore withdrawals (ghost / "if you'd never spent")
+function simulate(txns,rate,asOf,opts={}){
+  let bal=0,prev=null,put=0,spent=0;
+  for(const t of sortTx(txns)){
+    if(t.date>asOf)break;
+    if(prev)bal=grow(bal,rate,yearsBetween(prev,t.date));
+    if(t.type==="earn"){bal+=t.amt;put+=t.amt}
+    else if(!opts.noSpend){bal-=t.amt;spent+=t.amt}
+    prev=t.date;
+  }
+  if(prev)bal=grow(bal,rate,yearsBetween(prev,asOf));
+  return {balance:bal,put,spent,growth:bal-(put-spent)};
+}
+
+// Sample the actual + ghost balance over time for the History chart
+function historyPath(txns,rate,asOf,points=160){
+  const s=sortTx(txns);
+  if(!s.length)return [];
+  let from=parseD(s[0].date).getTime();
+  const to=parseD(asOf).getTime();
+  if(to-from<60*DAY)from=to-60*DAY;
+  const out=[];
+  for(let i=0;i<=points;i++){
+    const t=from+(to-from)*i/points;
+    const iso=isoD(new Date(t));
+    out.push({t,iso,bal:simulate(txns,rate,iso).balance,ghost:simulate(txns,rate,iso,{noSpend:true}).balance});
+  }
+  return out;
+}
+
+// Smooth projection from now; step in years (1 = integer years, .25 = dense for drawing)
+function projectPath(balance,rate,age0,horizonYears,step=1){
+  const out=[];const n=Math.round(horizonYears/step);
+  for(let i=0;i<=n;i++){const y=i*step;out.push({age:age0+y,v:grow(balance,rate,y)})}
+  return out;
+}
+// Apply a real historical window of annual returns
+function marketPath(balance,age0,horizonYears,startIdx){
+  const out=[{age:age0,v:balance,year:SP_START+startIdx-1}];
+  let v=balance,worst={ret:Infinity,year:null};
+  for(let i=0;i<horizonYears;i++){
+    const r=SP[startIdx+i];v*=(1+r/100);
+    if(r<worst.ret)worst={ret:r,year:SP_START+startIdx+i};
+    out.push({age:age0+i+1,v,year:SP_START+startIdx+i});
+  }
+  return {path:out,worst,startYear:SP_START+startIdx,endYear:SP_START+startIdx+horizonYears-1,end:v};
+}
+const maxStartIdx=h=>SP.length-h;
+const randomStartIdx=h=>Math.floor(Math.random()*(maxStartIdx(h)+1));
+
+// What a spend of `amt` at kid age `ageAtSpend` erases by `targetAge`
+const erasedAt=(amt,rate,ageAtSpend,targetAge)=>targetAge<=ageAtSpend?0:grow(amt,rate,targetAge-ageAtSpend);
+
+// Snowball: principal vs growth, annual compounding
+function snowball(P,rate,years){const out=[];for(let n=0;n<=years;n++){const v=P*Math.pow(1+rate,n);out.push({n,put:P,growth:v-P,v,made:n?v-P*Math.pow(1+rate,n-1):0})}return out}
+
+// ── Migration from v2 (Netlify-era) exports ──
+function migrate(d){
+  if(!d)return null;
+  if(d.v===3)return d;
+  const kids=(d.kids||[]).map((k,i)=>({
+    id:"k"+(i+1)+"_"+Math.random().toString(36).slice(2,6),
+    name:k.name||"Kid",
+    born:k.born||bornFromAge(Number(k.age)||6),
+    txns:(k.txns||k.transactions||[]).filter(t=>!(t.cat==="Interest"||t.category==="Interest"||/monthly interest/i.test(t.desc||""))).map((t,j)=>({
+      id:"t"+j+"_"+Math.random().toString(36).slice(2,6),
+      date:t.date,desc:t.desc||"",amt:Number(t.amt||t.amount)||0,
+      type:(t.type==="withdrawal"||t.type==="spend")?"spend":"earn",seq:j
+    }))
+  }));
+  return {v:3,family:d.familyName||d.family||"",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids};
+}
+/*ENGINE-END*/
+
+// ═══════════════════════════════════════════════════════════
+//  FORMAT
+// ═══════════════════════════════════════════════════════════
+const fmt=v=>(v<0?"-":"")+"$"+Math.round(Math.abs(v)).toLocaleString();
+const fmtK=v=>v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v>=1e4?"$"+Math.round(v/1e3)+"k":v>=1e3?"$"+(v/1e3).toFixed(1)+"k":"$"+Math.round(v);
+const pct1=r=>Math.round(r*1000)/10;                 // 0.07 → 7 (no float noise)
+const fmtPct=r=>{const p=pct1(r);return (p%1?p.toFixed(1):p.toFixed(0))+"%"};
+const fmtDay=iso=>{const d=parseD(iso);return (d.getMonth()+1)+"/"+d.getDate()};
+const fmtYr=iso=>parseD(iso).getFullYear();
+const fmtMonYr=t=>{const d=new Date(t);return d.toLocaleString("en-US",{month:"short"})+" '"+String(d.getFullYear()).slice(2)};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let D=null;           // persisted data
+let U={kid:0,tab:"grow",spend:false,spendAmt:40,market:false,mkStart:null,form:false,ftype:"earn",snowYr:1,settings:false,learnStart:null};
+
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(D))}catch(e){}}
+function load(){
+  try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){D=JSON.parse(raw);if(D&&D.kids)return true}}catch(e){}
+  try{const old=localStorage.getItem(LEGACY_KEY);if(old){const m=migrate(JSON.parse(old));if(m&&m.kids&&m.kids.length){D=m;save();return true}}}catch(e){}
+  return false;
+}
+const kid=()=>D.kids[U.kid];
+function exportData(){
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=(D.family||"family").replace(/\s+/g,"_").toLowerCase()+"_bank_"+todayISO()+".json";a.click();URL.revokeObjectURL(a.href);
+}
+function importData(){
+  const inp=document.createElement("input");inp.type="file";inp.accept=".json,application/json";
+  inp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+    r.onload=ev=>{try{const m=migrate(JSON.parse(ev.target.result));if(!m||!m.kids||!m.kids.length)throw 0;D=m;U.kid=0;U.settings=false;save();render()}catch(err){alert("That file doesn't look like a Family Bank export.")}};
+    r.readAsText(f)};
+  inp.click();
+}
+function resetAll(){if(confirm("Start over? This erases everything in this browser. Export first if you want a backup.")){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LEGACY_KEY);D=null;U={kid:0,tab:"grow",spend:false,spendAmt:40,market:false,mkStart:null,form:false,ftype:"earn",snowYr:1,settings:false,learnStart:null};render()}}
+
+// ═══════════════════════════════════════════════════════════
+//  CHART RENDERER (canvas, zero deps)
+//  cfg: {xMin,xMax, layers:[{type:'area'|'line'|'band', pts:[{x,y}], upper, lower, color, grad:[c0,c1], dash, width}],
+//        xTicks:[{x,label}], yFmt, dots:[{x,y,color}], marks:[{x,y,text,color}], hoverPts:[{x,y}], tip:(i)=>html }
+// ═══════════════════════════════════════════════════════════
+function drawChart(canvas,cfg){
+  const ctx=canvas.getContext("2d"),dpr=window.devicePixelRatio||1;
+  const W=canvas.clientWidth||600,H=canvas.clientHeight||280;
+  canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const pad={t:14,r:16,b:28,l:50},pW=W-pad.l-pad.r,pH=H-pad.t-pad.b;
+  let yMax=0;cfg.layers.forEach(L=>{(L.pts||L.upper||[]).forEach(p=>{if(p.y>yMax)yMax=p.y})});
+  yMax=yMax*1.1||1;
+  const xOf=x=>pad.l+((x-cfg.xMin)/((cfg.xMax-cfg.xMin)||1))*pW, yOf=y=>pad.t+pH-(y/yMax)*pH;
+  // grid + y labels
+  ctx.font="11px -apple-system,system-ui,sans-serif";ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+pH*i/4;ctx.strokeStyle="#EEF1F0";ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle="#9CA3AF";ctx.textAlign="right";ctx.fillText((cfg.yFmt||fmtK)(yMax*(1-i/4)),pad.l-8,y+4)}
+  ctx.textAlign="center";(cfg.xTicks||[]).forEach(t=>{const x=xOf(t.x);if(x<pad.l-1||x>W-pad.r+1)return;ctx.fillStyle="#9CA3AF";ctx.fillText(t.label,x,H-9)});
+  // dense paths (>60 pts) draw as straight segments; sparse paths get monotone bezier smoothing
+  const path=(pts)=>{const dense=pts.length>60;pts.forEach((p,i)=>{const x=xOf(p.x),y=yOf(p.y);if(!i)ctx.moveTo(x,y);else if(dense)ctx.lineTo(x,y);else{const q=pts[i-1],qx=xOf(q.x),qy=yOf(q.y),mx=(qx+x)/2;ctx.bezierCurveTo(mx,qy,mx,y,x,y)}})};
+  const pathRev=(pts)=>{const dense=pts.length>60;for(let i=pts.length-1;i>=0;i--){const x=xOf(pts[i].x),y=yOf(pts[i].y);if(i===pts.length-1||dense)ctx.lineTo(x,y);else{const q=pts[i+1],qx=xOf(q.x),qy=yOf(q.y),mx=(qx+x)/2;ctx.bezierCurveTo(mx,qy,mx,y,x,y)}}};
+  const gradOf=(c)=>{const g=ctx.createLinearGradient(0,pad.t,0,pad.t+pH);g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);return g};
+  cfg.layers.forEach(L=>{
+    if(!L)return;
+    if(L.type==="area"&&L.pts.length){ctx.fillStyle=L.grad?gradOf(L.grad):L.color;ctx.beginPath();path(L.pts);ctx.lineTo(xOf(L.pts[L.pts.length-1].x),yOf(0));ctx.lineTo(xOf(L.pts[0].x),yOf(0));ctx.closePath();ctx.fill();
+      ctx.strokeStyle=L.color;ctx.lineWidth=L.width||2.5;ctx.setLineDash(L.dash||[]);ctx.beginPath();path(L.pts);ctx.stroke();ctx.setLineDash([])}
+    else if(L.type==="band"&&L.upper.length){ctx.fillStyle=L.grad?gradOf(L.grad):L.color;ctx.beginPath();path(L.upper);pathRev(L.lower);ctx.closePath();ctx.fill();
+      ctx.strokeStyle=L.stroke||L.color;ctx.lineWidth=L.width||1.5;ctx.setLineDash(L.dash||[5,3]);ctx.beginPath();path(L.upper);ctx.stroke();ctx.setLineDash([])}
+    else if(L.type==="line"&&L.pts.length){ctx.strokeStyle=L.color;ctx.lineWidth=L.width||2;ctx.setLineDash(L.dash||[]);ctx.beginPath();path(L.pts);ctx.stroke();ctx.setLineDash([])}
+  });
+  (cfg.dots||[]).forEach(d=>{ctx.beginPath();ctx.arc(xOf(d.x),yOf(d.y),4,0,Math.PI*2);ctx.fillStyle=d.color;ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=1.5;ctx.stroke()});
+  (cfg.marks||[]).forEach(m=>{const x=xOf(m.x),y=yOf(m.y);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=m.color;ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=2;ctx.stroke();
+    ctx.font="700 11px -apple-system,system-ui,sans-serif";ctx.fillStyle=m.color;const tw=ctx.measureText(m.text).width;let tx=x+10;if(tx+tw>W-pad.r)tx=x-10-tw;ctx.textAlign="left";ctx.fillText(m.text,tx,y+4)});
+  canvas._cfg={cfg,xOf,yOf,pad,W,H};
+}
+function attachHover(canvas,tipEl){
+  if(canvas._hov)return;canvas._hov=true;
+  const move=(cx)=>{const c=canvas._cfg;if(!c||!c.cfg.hoverPts||!c.cfg.hoverPts.length)return;const rect=canvas.getBoundingClientRect();const mx=cx-rect.left;
+    let bi=0,bd=Infinity;c.cfg.hoverPts.forEach((p,i)=>{const d=Math.abs(c.xOf(p.x)-mx);if(d<bd){bd=d;bi=i}});
+    if(bd>40){tipEl.classList.remove("on");return}
+    const p=c.cfg.hoverPts[bi];tipEl.innerHTML=c.cfg.tip(bi);tipEl.classList.add("on");
+    const tw=tipEl.offsetWidth,px=c.xOf(p.x),py=c.yOf(p.y);let left=px+12;if(left+tw>c.W-6)left=px-tw-12;if(left<0)left=4;
+    tipEl.style.left=left+"px";tipEl.style.top=Math.max(0,Math.min(py-24,c.H-tipEl.offsetHeight-4))+"px"};
+  canvas.addEventListener("mousemove",e=>move(e.clientX));
+  canvas.addEventListener("touchstart",e=>move(e.touches[0].clientX),{passive:true});
+  canvas.addEventListener("touchmove",e=>move(e.touches[0].clientX),{passive:true});
+  canvas.addEventListener("mouseleave",()=>tipEl.classList.remove("on"));
+  canvas.addEventListener("touchend",()=>setTimeout(()=>tipEl.classList.remove("on"),1500));
+}
+
+// Snowball stacked bars
+function drawSnow(canvas,rows,upto,rate){
+  const ctx=canvas.getContext("2d"),dpr=window.devicePixelRatio||1;
+  const W=canvas.clientWidth||600,H=canvas.clientHeight||240;
+  canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const pad={t:10,r:10,b:26,l:50},pW=W-pad.l-pad.r,pH=H-pad.t-pad.b;
+  const N=rows.length,yMax=rows[N-1].v*1.08;
+  const bw=pW/N,gap=Math.min(4,bw*.25);
+  ctx.font="11px -apple-system,system-ui,sans-serif";
+  for(let i=0;i<=4;i++){const y=pad.t+pH*i/4;ctx.strokeStyle="#EEF1F0";ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle="#9CA3AF";ctx.textAlign="right";ctx.fillText(fmtK(yMax*(1-i/4)),pad.l-8,y+4)}
+  rows.forEach((r,i)=>{
+    const x=pad.l+i*bw+gap/2,w=bw-gap,on=i<=upto,cur=i===upto;
+    const hp=(r.put/yMax)*pH,hg=(r.growth/yMax)*pH;
+    ctx.globalAlpha=on?1:.18;
+    ctx.fillStyle=cur?"#047857":"#059669";ctx.fillRect(x,pad.t+pH-hp,w,hp);
+    ctx.fillStyle=cur?"#34D399":"#6EE7B7";ctx.fillRect(x,pad.t+pH-hp-hg,w,hg);
+    ctx.globalAlpha=1;
+    if(i%5===0||cur){ctx.fillStyle=cur?"#111827":"#9CA3AF";ctx.textAlign="center";ctx.font=(cur?"700 ":"")+"11px -apple-system,system-ui,sans-serif";ctx.fillText(i,x+w/2,H-8)}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DERIVED VIEW DATA
+// ═══════════════════════════════════════════════════════════
+function view(){
+  const k=kid(),age=ageNow(k.born),rate=D.rate,today=todayISO();
+  const sim=simulate(k.txns,rate,today),ghost=simulate(k.txns,rate,today,{noSpend:true});
+  const bal=Math.max(0,sim.balance);
+  const miles=D.miles.filter(m=>m>age).sort((a,b)=>a-b);
+  const goal=miles.includes(D.goal)?D.goal:(miles.find(m=>m>=D.goal)||miles[miles.length-1]||Math.ceil(age)+10);
+  const H=Math.min(80,Math.max(Math.ceil(goal-age)+5,10));
+  const horizon=Math.min(H,SP.length);
+  return {k,age,rate,today,sim,ghost,bal,miles,goal,H:horizon};
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
+function render(){
+  const root=document.getElementById("root");
+  if(!D){renderSetup(root);return}
+  if(!D.kids.length){U.settings=true}
+  if(U.kid>=D.kids.length)U.kid=0;
+  const v=D.kids.length?view():null;
+  root.innerHTML=`<div class="app">
+    ${renderHeader(v)}
+    ${v?renderHero(v):""}
+    ${v?`<div class="tabs">
+      <button class="tab ${U.tab==="grow"?"on":""}" onclick="go('grow')">Grow</button>
+      <button class="tab ${U.tab==="history"?"on":""}" onclick="go('history')">History</button>
+      <button class="tab ${U.tab==="learn"?"on":""}" onclick="go('learn')">Learn</button>
+    </div>`:""}
+    ${v?(U.tab==="grow"?renderGrow(v):U.tab==="history"?renderHistory(v):renderLearn(v)):""}
+    <div class="foot">${esc(D.family||"Family")} Bank · ${fmtPct(D.rate)} a year · Data lives only in this browser — <a href="#" onclick="exportData();return false">export a backup</a></div>
+  </div>
+  ${U.settings?renderSettings():""}`;
+  requestAnimationFrame(()=>{if(v)afterRender(v)});
+}
+
+function renderHeader(v){
+  return `<div class="hdr"><div class="hdr-top"><div><div class="brand">${esc(D.family||"Family")} Family</div><h1>The Bank</h1></div><button class="gear" onclick="openSettings()" title="Settings">&#9881;</button></div>
+  <div class="kids">${D.kids.map((k,i)=>`<button class="kid ${i===U.kid?"on":""}" onclick="pickKid(${i})">${esc(k.name)}</button>`).join("")}</div></div>`;
+}
+
+function renderHero(v){
+  const atGoal=grow(v.bal,v.rate,v.goal-v.age);
+  return `<div class="card hero"><div class="who">${esc(v.k.name)}'s money &middot; age ${Math.floor(v.age)}</div><div class="big">${fmt(v.bal)}</div>
+  <div class="split">Earned ${fmt(v.sim.put)}${v.sim.spent>0?` &middot; Spent ${fmt(v.sim.spent)}`:""} &middot; Grew <b>+${fmt(Math.max(0,v.sim.growth))}</b></div>
+  <div class="stats"><div class="stat"><div class="k">At age ${v.goal}</div><div class="v" style="color:var(--g600)">${fmt(atGoal)}</div></div>
+  <div class="stat"><div class="k">Growth rate</div><div class="v" style="color:var(--n700)">${fmtPct(v.rate)}/yr</div></div>
+  <div class="stat"><div class="k">Spending cost so far</div><div class="v" style="color:${v.sim.spent>0?"var(--r600)":"var(--n300)"}">${v.sim.spent>0?"-"+fmt(v.ghost.balance-v.sim.balance):"—"}</div></div></div></div>`;
+}
+
+// ── GROW ──
+function renderGrow(v){
+  const spendMax=Math.max(50,Math.ceil(v.bal/5)*5);
+  if(U.spendAmt>spendMax)U.spendAmt=spendMax;
+  const erasedGoal=U.spend?erasedAt(U.spendAmt,v.rate,v.age,v.goal):0;
+  const mult=U.spendAmt>0?(erasedGoal/U.spendAmt):0;
+  let mk=null;if(U.market){if(U.mkStart==null||U.mkStart>maxStartIdx(v.H))U.mkStart=randomStartIdx(v.H);mk=marketPath(v.bal,v.age,v.H,U.mkStart)}
+  const smoothEnd=grow(v.bal,v.rate,v.H);
+  return `
+  <div class="card"><div class="row"><div><h2>${U.spend?"What spending erases":U.market?"The real stock market":"If you leave it alone"}</h2>
+    <div class="sub">${U.spend?"Green is what you keep. Red is what's gone.":U.market?`What actually happened starting in ${mk.startYear}`:`${fmtPct(v.rate)} a year, every year`}</div></div>
+    <div class="seg"><button class="${!U.market?"on":""}" onclick="setMarket(false)">Smooth</button><button class="${U.market?"on":""}" onclick="setMarket(true)">Real market</button></div></div>
+    <div class="chart"><canvas id="cGrow"></canvas><div class="tip" id="tGrow"></div></div>
+    ${U.market?`<div class="legend"><span><i style="background:#2563EB"></i>Real market ${mk.startYear}–${mk.endYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
+      <div class="caption">If ${esc(v.k.name)} had started in <b>${mk.startYear}</b>: worst year was <span class="bad">${mk.worst.year} (${mk.worst.ret.toFixed(0)}%)</span>. It still ended at <b>${fmt(mk.end)}</b> vs ${fmt(smoothEnd)} on the smooth line. Some stretches do better, some worse — that's why we say "about ${fmtPct(SP_CAGR)}."</div>
+      <div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="shuffle()">&#x21bb; Try a different start year</button></div>`:""}
+    ${U.spend?`<div class="legend"><span><i style="background:#10B981"></i>What you keep</span><span><i style="background:#EF4444;opacity:.7"></i>Erased by spending</span></div>`:""}
+  </div>
+
+  <div class="card spendcard ${U.spend?"on":""}"><div class="row"><div><h2>What if I spend?</h2><div class="sub">Slide it and watch what disappears</div></div>
+    <button class="btn ${U.spend?"btn-danger":"btn-ghost"} btn-sm" onclick="toggleSpend()">${U.spend?"Never mind":"Show me"}</button></div>
+    ${U.spend?`<div class="spend-amt" id="spendAmt">${fmt(U.spendAmt)}</div>
+      <input type="range" class="slider" min="0" max="${spendMax}" step="5" value="${U.spendAmt}" oninput="slide(this.value)">
+      <div class="slider-lbl"><span>$0</span><span>${fmt(spendMax)}</span></div>
+      <div class="erase" id="eraseBox" ${U.spendAmt>0?"":"style='display:none'"}><div class="top">Spending <span id="eSpend">${fmt(U.spendAmt)}</span> today erases<b id="eGoal">${fmt(erasedGoal)}</b>from your age-${v.goal} self</div>
+      <div class="bar">That's <b id="eMult">${mult.toFixed(1)}x</b> the price tag</div></div>`:""}
+  </div>
+
+  <div class="card"><h2>${esc(v.k.name)}'s money at every age</h2><div class="sub">${U.spend?"Red is what this purchase erases":"If nothing is spent"}</div>
+    <div class="miles">${v.miles.map(m=>{const val=grow(v.bal,v.rate,m-v.age),er=U.spend?erasedAt(U.spendAmt,v.rate,v.age,m):0;
+      return `<div class="mile ${m===v.goal?"goal":""}">${m===v.goal?'<div class="tag">Goal</div>':""}<div class="a">Age ${m}</div><div class="v" data-m="${m}">${fmt(val)}</div>${U.spend?`<div class="e" data-e="${m}">-${fmt(er)}</div>`:""}</div>`}).join("")}</div>
+  </div>
+
+  <div class="card earncard"><div class="row"><h2>How to earn</h2><button class="btn btn-ghost btn-sm" onclick="openSettings('earn')">Edit</button></div>
+    ${D.earn&&D.earn.trim()?`<pre>${esc(D.earn)}</pre>`:`<div class="empty">Write down what pays what — A's on a report card, doing something without being asked, whatever your family rewards. Tap Edit.</div>`}
+  </div>`;
+}
+
+// ── HISTORY ──
+function renderHistory(v){
+  const txs=sortTx(v.k.txns).reverse();
+  const costSoFar=v.ghost.balance-v.sim.balance;
+  return `
+  <div class="card"><h2>${esc(v.k.name)}'s money so far</h2><div class="sub">Every deposit, every purchase, and the growth in between</div>
+    <div class="chart"><canvas id="cHist"></canvas><div class="tip" id="tHist"></div></div>
+    <div class="legend"><span><i style="background:#10B981"></i>What ${esc(v.k.name)} has</span><span><i class="dash"></i>If nothing was ever spent</span><span><i style="background:#EF4444;width:8px;height:8px;border-radius:50%"></i>Purchase</span></div>
+    ${v.sim.spent>0?`<div class="cost-line">Spending has cost <b>${fmt(costSoFar)}</b> so far — ${fmt(v.sim.spent)} spent, plus ${fmt(costSoFar-v.sim.spent)} it would have grown into by today.</div>`:""}
+  </div>
+
+  <div class="card"><div class="row"><h2>Ledger</h2><button class="btn btn-primary btn-sm" onclick="toggleForm()">${U.form?"Close":"+ Add"}</button></div>
+    ${U.form?renderForm(v):""}
+    <div class="ledger">${txs.length?txs.map(t=>{
+      const a=ageAt(v.k.born,t.date),er=t.type==="spend"?erasedAt(t.amt,v.rate,a,v.goal):0;
+      return `<div class="tx"><div class="d">${fmtDay(t.date)}<br>${fmtYr(t.date)}</div><div><div class="t">${esc(t.desc)||(t.type==="earn"?"Earned":"Spent")}</div>${t.type==="spend"&&er>0?`<span class="er">erased ${fmt(er)} @ ${v.goal}</span>`:""}</div>
+        <div style="display:flex;align-items:center;gap:6px"><div class="amt ${t.type}">${t.type==="earn"?"+":"-"}${fmt(t.amt)}</div><button class="x" onclick="delTx('${t.id}')" title="Remove">&times;</button></div></div>`}).join("")
+      :`<div class="empty-state">Nothing yet. Tap <b>+ Add</b> to put in the first dollar.</div>`}</div>
+  </div>`;
+}
+function renderForm(v){
+  const isSpend=U.ftype==="spend";
+  return `<div class="form">
+    <div class="seg ${isSpend?"spend":"earn"}" style="display:flex;margin-bottom:12px"><button style="flex:1" class="${!isSpend?"on":""}" onclick="setFType('earn')">Earned</button><button style="flex:1" class="${isSpend?"on":""}" onclick="setFType('spend')">Spent</button></div>
+    <div class="grid"><div class="full"><label class="lbl">What for?</label><input class="inp" id="fDesc" placeholder="${isSpend?"Lego set":"Report card — 3 A's"}" oninput="liveReceipt()"></div>
+    <div><label class="lbl">Amount</label><input class="inp" id="fAmt" type="number" inputmode="decimal" min="0" step="1" placeholder="0" oninput="liveReceipt()"></div>
+    <div><label class="lbl">Date</label><input class="inp" id="fDate" type="date" value="${todayISO()}" max="${todayISO()}" onchange="liveReceipt()"></div></div>
+    <div id="receipt"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn btn-ghost" onclick="toggleForm()">Cancel</button><button class="btn ${isSpend?"btn-danger":"btn-primary"}" id="fGo" onclick="addTx()">${isSpend?"Spend it":"Add it"}</button></div>
+  </div>`;
+}
+function liveReceipt(){
+  const v=view(),box=document.getElementById("receipt");if(!box)return;
+  const amt=parseFloat(document.getElementById("fAmt").value)||0,date=document.getElementById("fDate").value||todayISO();
+  if(U.ftype!=="spend"||amt<=0){box.innerHTML="";return}
+  const a=ageAt(v.k.born,date);
+  const lines=v.miles.map(m=>`<span>Age ${m}: <b>-${fmt(erasedAt(amt,v.rate,a,m))}</b></span>`).join("");
+  const over=amt>v.bal+0.005;
+  box.innerHTML=`<div class="receipt"><div class="h">This ${fmt(amt)} erases</div><div class="lines">${lines}</div>${over?`<div style="margin-top:8px;font-size:12px;color:var(--r600);font-weight:700">That's more than ${esc(v.k.name)} has (${fmt(v.bal)}).</div>`:""}</div>`;
+  const go=document.getElementById("fGo");if(go)go.disabled=over;
+}
+
+// ── LEARN ──
+function renderLearn(v){
+  const P=v.bal>=10?Math.round(v.bal):100;
+  const rows=snowball(P,v.rate,30),cur=rows[U.snowYr];
+  const cross=rows.findIndex(r=>r.growth>=r.put);
+  if(U.learnStart==null)U.learnStart=2000-SP_START;
+  const lh=Math.min(25,v.H),mk=marketPath(P,0,lh,U.learnStart);
+  return `
+  <div class="card learn"><h2>The snowball</h2><div class="sub">Why leaving money alone makes more money</div>
+    <div class="chart" style="height:220px"><canvas id="cSnow"></canvas></div>
+    <div class="legend"><span><i style="background:#059669"></i>Money ${esc(v.k.name)} put in</span><span><i style="background:#6EE7B7"></i>Money the money made</span></div>
+    <div class="stepper"><button onclick="snow(-1)">&minus;</button><div class="yr">Year ${U.snowYr}</div><button onclick="snow(1)">+</button></div>
+    <div class="snow-say">${U.snowYr===0?`You put in <b>${fmt(P)}</b>. That's it. Now wait.`:
+      U.snowYr===1?`Year 1: your ${fmt(P)} made <b>${fmt(cur.made)}</b>. Now you have <b>${fmt(cur.v)}</b>.`:
+      `Year ${U.snowYr}: it made <b>${fmt(cur.made)}</b> this year — more than last year, because the money it already made is making money too. Now <b>${fmt(cur.v)}</b>.`}</div>
+    ${cross>0?`<p style="text-align:center;font-size:13px;color:var(--n500)">By year <b>${cross}</b>, the money your money made is bigger than what you put in.</p>`:""}
+  </div>
+
+  <div class="card learn"><h2>Where does the growth come from?</h2>
+    <p>The money doesn't grow by itself. When you put it in the <b>stock market</b>, you're buying tiny pieces of real companies — the ones that make your shoes, your games, your snacks.</p>
+    <p>When those companies make money, you get your share. That's what the growth is: <b>your money is out working</b>, even while you sleep.</p>
+    <p>For the last 100 years, the whole market has grown about <b>${fmtPct(SP_CAGR)} a year</b>. Not every year — but on average, over a long time.</p>
+  </div>
+
+  <div class="card learn"><div class="row"><div><h2>Why it's bumpy</h2><div class="sub">The same ${fmt(P)}, smooth vs. what really happened</div></div><button class="btn btn-ghost btn-sm" onclick="learnShuffle()">&#x21bb; Different years</button></div>
+    <div class="chart" style="height:220px"><canvas id="cBump"></canvas><div class="tip" id="tBump"></div></div>
+    <div class="legend"><span><i style="background:#2563EB"></i>Real market ${mk.startYear}–${mk.endYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
+    <div class="bigstat"><div><div class="k">Years the market<br>went down</div><div class="v red">${SP_NEG} of ${SP.length}</div></div><div><div class="k">Worst single year<br>(${SP_START+SP.indexOf(Math.min(...SP))})</div><div class="v red">${Math.min(...SP).toFixed(0)}%</div></div><div><div class="k">Average, all<br>100 years</div><div class="v green">+${fmtPct(SP_CAGR)}</div></div></div>
+    <p>Some years it drops — about <b>1 in every 4</b>. People who get scared and pull their money out lock in the loss. People who <b>leave it alone</b> ride it back up. Every single 20-year stretch in the last century ended higher than it started.</p>
+  </div>`;
+}
+
+// ── SETTINGS ──
+function renderSettings(){
+  const isPreset=PRESETS.some(p=>Math.abs(p.r-D.rate)<1e-9);
+  const url=location.href.split("#")[0].split("?")[0];
+  return `<div class="modal-bg" onclick="if(event.target===this)closeSettings()"><div class="modal">
+    <div class="row"><h2>Settings</h2><button class="btn btn-ghost btn-sm" onclick="closeSettings()">Done</button></div>
+    <div class="field"><label>Family name</label><input class="inp" id="sFamily" value="${esc(D.family)}" onchange="D.family=this.value.trim();save()"></div>
+
+    <div class="sect"><h3>Growth rate</h3><div class="hint">What the family bank pays, per year. The stock market has averaged about ${fmtPct(SP_CAGR)} for 100 years.</div>
+      <div class="presets">${PRESETS.map(p=>`<button class="preset ${Math.abs(p.r-D.rate)<1e-9?"on":""}" onclick="setRate(${p.r})">${p.l}</button>`).join("")}<button class="preset ${isPreset?"":"on"}" onclick="document.getElementById('sRate').focus()">Custom</button></div>
+      <div class="rate-row"><input class="inp" id="sRate" type="number" inputmode="decimal" step="0.5" min="0" max="50" value="${pct1(D.rate)}" onchange="setRate(parseFloat(this.value)/100)"><span style="font-size:14px;color:var(--n500)">% per year</span></div></div>
+
+    <div class="sect"><h3>Kids</h3><div class="hint">Age is remembered as a birth month so it keeps up on its own.</div>
+      <div style="margin-top:10px">${D.kids.map((k,i)=>`<div class="kid-row"><div><div class="lbl">Name</div><input class="inp" value="${esc(k.name)}" onchange="D.kids[${i}].name=this.value.trim()||'Kid';save()"></div>
+        <div><div class="lbl">Age</div><input class="inp" type="number" inputmode="numeric" min="0" max="25" value="${Math.floor(ageNow(k.born))}" onchange="D.kids[${i}].born=bornFromAge(parseInt(this.value)||0);save()"></div>
+        <div><div class="lbl">Born</div><input class="inp" type="month" value="${k.born}" onchange="if(this.value){D.kids[${i}].born=this.value;save()}"></div>
+        <button class="icon-btn" onclick="removeKid(${i})" title="Remove">&times;</button></div>`).join("")}</div>
+      <button class="btn btn-soft btn-block btn-sm" onclick="addKid()">+ Add a kid</button></div>
+
+    <div class="sect"><h3>Milestone ages</h3><div class="hint">The ages shown on the Grow tab. Pick one as the goal — it's the number on the hero card and on every purchase receipt.</div>
+      <div class="miles-row">${[0,1,2,3,4].map(i=>`<input class="inp" type="number" inputmode="numeric" min="1" max="100" value="${D.miles[i]??""}" onchange="setMile(${i},this.value)">`).join("")}</div>
+      <div class="rate-row"><span style="font-size:13px;color:var(--n600)">Goal age</span><select class="inp" style="width:auto" onchange="D.goal=parseInt(this.value);save();render()">${[...D.miles].sort((a,b)=>a-b).map(m=>`<option ${m===D.goal?"selected":""}>${m}</option>`).join("")}</select></div></div>
+
+    <div class="sect" id="earnSect"><h3>How to earn</h3><div class="hint">Shown on the Grow tab. One line per thing.</div>
+      <textarea class="inp" id="sEarn" style="margin-top:10px" placeholder="A on a report card — $25&#10;B — $10&#10;Did something without being asked — $15&#10;Did the right thing when it was hard — $10" onchange="D.earn=this.value;save()">${esc(D.earn)}</textarea></div>
+
+    <div class="sect"><h3>Share</h3><div class="hint">Send this link to another family. They'll get their own setup screen; nothing of yours is shared.</div>
+      <div class="sharebox"><input class="inp" readonly value="${esc(url)}" onclick="this.select()"><button class="btn btn-ghost btn-sm" onclick="copyLink(this)">Copy</button></div></div>
+
+    <div class="sect"><h3>Your data</h3><div class="hint">Everything lives in this browser only. Export to back up or move to another device.</div>
+      <div class="actions"><button class="btn btn-soft btn-sm" onclick="exportData()">Export backup</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import</button><button class="btn btn-ghost btn-sm" style="color:var(--r600);margin-left:auto" onclick="resetAll()">Start over</button></div></div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="closeSettings()">Done</button></div>
+  </div></div>`;
+}
+
+// ── SETUP ──
+function renderSetup(root){
+  if(!U.setupKids)U.setupKids=[{name:"",age:"",bal:""}];
+  root.innerHTML=`<div class="setup-bg"><div class="setup"><div class="brand">Family Bank</div><h1>Set up your bank</h1>
+    <div class="sub">A bank for your kids that pays interest, shows them the snowball, and tells them what every purchase really costs.</div>
+    <div class="field"><label>Family name</label><input class="inp" id="sFamily" placeholder="Smith" value="${esc(U.setupFamily||"")}"></div>
+    <div class="field"><label>Kids</label><div id="sKids"></div><button class="btn btn-soft btn-block btn-sm" onclick="setupAddKid()">+ Add another</button></div>
+    <button class="btn btn-primary btn-block" style="margin-top:22px;padding:14px;font-size:16px" onclick="finishSetup()">Open the bank</button>
+    <div class="note">Everything saves in this browser automatically.<br>No account, no server, nothing leaves your device.</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="loadDemo()">Try it with sample data</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import a backup</button></div>
+  </div></div>`;
+  renderSetupKids();
+}
+function renderSetupKids(){
+  const el=document.getElementById("sKids");if(!el)return;
+  el.innerHTML=U.setupKids.map((k,i)=>`<div class="kid-row"><div><div class="lbl">Name</div><input class="inp" id="sk_n${i}" value="${esc(k.name)}" placeholder="Caroline"></div>
+    <div><div class="lbl">Age</div><input class="inp" id="sk_a${i}" type="number" inputmode="numeric" value="${esc(k.age)}" placeholder="6" min="0" max="25"></div>
+    <div><div class="lbl">Starting $</div><input class="inp" id="sk_b${i}" type="number" inputmode="decimal" value="${esc(k.bal)}" placeholder="100" min="0"></div>
+    ${U.setupKids.length>1?`<button class="icon-btn" onclick="setupRemoveKid(${i})">&times;</button>`:"<div></div>"}</div>`).join("");
+}
+function setupSync(){U.setupFamily=(document.getElementById("sFamily")||{}).value||"";U.setupKids=U.setupKids.map((k,i)=>({name:(document.getElementById("sk_n"+i)||{}).value||"",age:(document.getElementById("sk_a"+i)||{}).value||"",bal:(document.getElementById("sk_b"+i)||{}).value||""}))}
+function setupAddKid(){setupSync();U.setupKids.push({name:"",age:"",bal:""});renderSetupKids()}
+function setupRemoveKid(i){setupSync();U.setupKids.splice(i,1);renderSetupKids()}
+function finishSetup(){
+  setupSync();
+  const kids=U.setupKids.filter(k=>k.name.trim()).map((k,i)=>{const bal=parseFloat(k.bal)||0;return {id:uid("k"),name:k.name.trim(),born:bornFromAge(parseInt(k.age)||6),
+    txns:bal>0?[{id:uid("t"),date:todayISO(),desc:"Opening deposit",amt:bal,type:"earn",seq:0}]:[]}});
+  if(!kids.length){alert("Add at least one kid.");return}
+  D={v:3,family:(U.setupFamily||"").trim()||"Our",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids};
+  U.kid=0;U.tab="grow";save();render();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AFTER RENDER: charts
+// ═══════════════════════════════════════════════════════════
+function afterRender(v){
+  if(U.tab==="grow")drawGrow(v);
+  else if(U.tab==="history")drawHist(v);
+  else if(U.tab==="learn"){drawSnowCard(v);drawBump(v)}
+  if(U.settings&&U.settingsFocus==="earn"){const t=document.getElementById("sEarn");if(t){t.focus();t.scrollIntoView({block:"center"})}U.settingsFocus=null}
+}
+function drawGrow(v){
+  const c=document.getElementById("cGrow"),t=document.getElementById("tGrow");if(!c)return;
+  const smooth=projectPath(v.bal,v.rate,v.age,v.H);            // integer years → hover/tooltips
+  const smoothD=projectPath(v.bal,v.rate,v.age,v.H,.25);       // dense → drawing
+  const xTicks=[];for(let a=Math.ceil(v.age);a<=v.age+v.H;a++)if(a%5===0||a===v.goal)xTicks.push({x:a,label:String(a)});
+  let layers=[],hoverPts=smooth.map(p=>({x:p.age,y:p.v})),tip;
+  if(U.market){
+    const mk=marketPath(v.bal,v.age,v.H,U.mkStart);
+    layers=[{type:"line",pts:smoothD.map(p=>({x:p.age,y:p.v})),color:"#9CA3AF",dash:[5,4],width:1.5},
+            {type:"area",pts:mk.path.map(p=>({x:p.age,y:p.v})),color:"#2563EB",grad:["rgba(37,99,235,.18)","rgba(37,99,235,.01)"]}];
+    const wi=mk.path.findIndex(p=>p.year===mk.worst.year);
+    hoverPts=mk.path.map(p=>({x:p.age,y:p.v}));
+    tip=i=>{const p=mk.path[i],s=smooth[i];return `<b>Age ${Math.floor(p.age)}${i?` · ${p.year}`:""}</b><div class="l"><span>Real market</span><span style="color:#2563EB;font-weight:700">${fmt(p.v)}</span></div><div class="l"><span>Smooth</span><span>${fmt(s.v)}</span></div>${i?`<div class="l"><span>${p.year} return</span><span style="color:${SP[p.year-SP_START]<0?"#DC2626":"#059669"};font-weight:700">${SP[p.year-SP_START]>0?"+":""}${SP[p.year-SP_START].toFixed(0)}%</span></div>`:""}`};
+    drawChart(c,{xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip,marks:wi>0?[{x:mk.path[wi].age,y:mk.path[wi].v,text:`${mk.worst.year}: ${mk.worst.ret.toFixed(0)}%`,color:"#DC2626"}]:[]});
+  }else if(U.spend&&U.spendAmt>0){
+    const kept=projectPath(Math.max(0,v.bal-U.spendAmt),v.rate,v.age,v.H);
+    const keptD=projectPath(Math.max(0,v.bal-U.spendAmt),v.rate,v.age,v.H,.25);
+    layers=[{type:"area",pts:keptD.map(p=>({x:p.age,y:p.v})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]},
+            {type:"band",upper:smoothD.map(p=>({x:p.age,y:p.v})),lower:keptD.map(p=>({x:p.age,y:p.v})),color:"#EF4444",grad:["rgba(239,68,68,.22)","rgba(239,68,68,.04)"]}];
+    tip=i=>{const s=smooth[i],k=kept[i];return `<b>Age ${Math.floor(s.age)}</b><div class="l"><span>If you keep it</span><span style="color:#059669;font-weight:700">${fmt(s.v)}</span></div><div class="l"><span>If you spend ${fmt(U.spendAmt)}</span><span>${fmt(k.v)}</span></div><div class="l"><span style="color:#DC2626">Erased</span><span style="color:#DC2626;font-weight:700">${fmt(s.v-k.v)}</span></div>`};
+    drawChart(c,{xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip});
+  }else{
+    layers=[{type:"area",pts:smoothD.map(p=>({x:p.age,y:p.v})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]}];
+    tip=i=>{const s=smooth[i];return `<b>Age ${Math.floor(s.age)}</b><div class="l"><span>Balance</span><span style="color:#059669;font-weight:700">${fmt(s.v)}</span></div><div class="l"><span>Growth</span><span>+${fmt(s.v-v.bal)}</span></div>`};
+    drawChart(c,{xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip});
+  }
+  attachHover(c,t);
+}
+function drawHist(v){
+  const c=document.getElementById("cHist"),t=document.getElementById("tHist");if(!c)return;
+  const path=historyPath(v.k.txns,v.rate,v.today);
+  if(!path.length){const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);return}
+  const xMin=path[0].t,xMax=path[path.length-1].t,span=xMax-xMin;
+  const xTicks=[];const nT=Math.min(6,Math.max(2,Math.round(span/(45*DAY))));for(let i=0;i<=nT;i++){const tt=xMin+span*i/nT;xTicks.push({x:tt,label:span>400*DAY?String(new Date(tt).getFullYear()):fmtMonYr(tt)})}
+  const dots=sortTx(v.k.txns).filter(tx=>tx.date>=path[0].iso).map(tx=>{const tt=parseD(tx.date).getTime();const b=simulate(v.k.txns,v.rate,tx.date).balance;return {x:tt,y:b,color:tx.type==="earn"?"#059669":"#EF4444",tx}});
+  const layers=[{type:"line",pts:path.map(p=>({x:p.t,y:p.ghost})),color:"#9CA3AF",dash:[5,4],width:1.5},
+                {type:"area",pts:path.map(p=>({x:p.t,y:p.bal})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]}];
+  const hoverPts=path.map(p=>({x:p.t,y:p.bal}));
+  const tip=i=>{const p=path[i];const near=dots.filter(d=>Math.abs(d.x-p.t)<=span/path.length*1.5);const d=new Date(p.t);
+    return `<b>${d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</b><div class="l"><span>Balance</span><span style="color:#059669;font-weight:700">${fmt(p.bal)}</span></div>${p.ghost-p.bal>0.5?`<div class="l"><span>If never spent</span><span>${fmt(p.ghost)}</span></div>`:""}${near.map(n=>`<div class="l" style="margin-top:4px;color:${n.tx.type==="earn"?"#059669":"#DC2626"}"><span>${esc(n.tx.desc)||(n.tx.type==="earn"?"Earned":"Spent")}</span><span style="font-weight:700">${n.tx.type==="earn"?"+":"-"}${fmt(n.tx.amt)}</span></div>`).join("")}`};
+  drawChart(c,{xMin,xMax,layers,xTicks,dots,hoverPts,tip});
+  attachHover(c,t);
+}
+function drawSnowCard(v){const c=document.getElementById("cSnow");if(!c)return;const P=v.bal>=10?Math.round(v.bal):100;drawSnow(c,snowball(P,v.rate,30),U.snowYr,v.rate)}
+function drawBump(v){
+  const c=document.getElementById("cBump"),t=document.getElementById("tBump");if(!c)return;
+  const P=v.bal>=10?Math.round(v.bal):100,lh=Math.min(25,v.H);
+  const mk=marketPath(P,0,lh,U.learnStart),sm=projectPath(P,v.rate,0,lh),smD=projectPath(P,v.rate,0,lh,.25);
+  const xTicks=[];for(let i=0;i<=lh;i+=5)xTicks.push({x:i,label:String(SP_START+U.learnStart+i)});
+  const wi=mk.path.findIndex(p=>p.year===mk.worst.year);
+  drawChart(c,{xMin:0,xMax:lh,xTicks,layers:[{type:"line",pts:smD.map(p=>({x:p.age,y:p.v})),color:"#9CA3AF",dash:[5,4],width:1.5},{type:"area",pts:mk.path.map(p=>({x:p.age,y:p.v})),color:"#2563EB",grad:["rgba(37,99,235,.18)","rgba(37,99,235,.01)"]}],
+    hoverPts:mk.path.map(p=>({x:p.age,y:p.v})),tip:i=>{const p=mk.path[i],s=sm[i];return `<b>${i?p.year:"Start"}</b><div class="l"><span>Real</span><span style="color:#2563EB;font-weight:700">${fmt(p.v)}</span></div><div class="l"><span>Smooth</span><span>${fmt(s.v)}</span></div>${i?`<div class="l"><span>That year</span><span style="font-weight:700;color:${SP[p.year-SP_START]<0?"#DC2626":"#059669"}">${SP[p.year-SP_START]>0?"+":""}${SP[p.year-SP_START].toFixed(0)}%</span></div>`:""}`},
+    marks:wi>0?[{x:mk.path[wi].age,y:mk.path[wi].v,text:`${mk.worst.year}: ${mk.worst.ret.toFixed(0)}%`,color:"#DC2626"}]:[]});
+  attachHover(c,t);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════════════════════
+function go(tab){U.tab=tab;U.form=false;render()}
+function pickKid(i){U.kid=i;U.spend=false;U.market=false;U.mkStart=null;U.form=false;U.snowYr=1;render()}
+function toggleSpend(){U.spend=!U.spend;if(U.spend)U.market=false;render()}
+function setMarket(on){U.market=on;if(on){U.spend=false;const v=view();U.mkStart=randomStartIdx(v.H)}render()}
+function shuffle(){const v=view();let s;do{s=randomStartIdx(v.H)}while(s===U.mkStart&&maxStartIdx(v.H)>0);U.mkStart=s;render()}
+function learnShuffle(){const v=view();const lh=Math.min(25,v.H);let s;do{s=randomStartIdx(lh)}while(s===U.learnStart);U.learnStart=s;render()}
+function slide(val){
+  U.spendAmt=Number(val);const v=view();
+  const eg=erasedAt(U.spendAmt,v.rate,v.age,v.goal),mult=U.spendAmt>0?eg/U.spendAmt:0;
+  const set=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt};
+  set("spendAmt",fmt(U.spendAmt));set("eSpend",fmt(U.spendAmt));set("eGoal",fmt(eg));set("eMult",mult.toFixed(1)+"x");
+  const box=document.getElementById("eraseBox");if(box)box.style.display=U.spendAmt>0?"":"none";
+  v.miles.forEach(m=>{const e=document.querySelector(`[data-e="${m}"]`);if(e)e.textContent="-"+fmt(erasedAt(U.spendAmt,v.rate,v.age,m))});
+  drawGrow(v);
+}
+function toggleForm(){U.form=!U.form;U.ftype="earn";render();if(U.form){const d=document.getElementById("fDesc");if(d)d.focus()}}
+function setFType(t){U.ftype=t;const desc=(document.getElementById("fDesc")||{}).value,amt=(document.getElementById("fAmt")||{}).value,date=(document.getElementById("fDate")||{}).value;render();
+  const D1=document.getElementById("fDesc"),A1=document.getElementById("fAmt"),T1=document.getElementById("fDate");if(D1)D1.value=desc||"";if(A1)A1.value=amt||"";if(T1&&date)T1.value=date;liveReceipt()}
+function addTx(){
+  const desc=document.getElementById("fDesc").value.trim(),amt=parseFloat(document.getElementById("fAmt").value),date=document.getElementById("fDate").value;
+  if(!(amt>0)){alert("Enter an amount.");return}
+  if(!date||date>todayISO()){alert("Pick a date that isn't in the future.");return}
+  const v=view();
+  if(U.ftype==="spend"&&amt>v.bal+0.005){alert(`${v.k.name} only has ${fmt(v.bal)}.`);return}
+  const k=kid();k.txns.push({id:uid("t"),date,desc,amt:Math.round(amt*100)/100,type:U.ftype,seq:k.txns.length});
+  U.form=false;save();render();
+}
+function delTx(id){const k=kid();const t=k.txns.find(x=>x.id===id);if(!t)return;if(!confirm(`Remove "${t.desc||(t.type==="earn"?"Earned":"Spent")}" (${fmt(t.amt)})?`))return;k.txns=k.txns.filter(x=>x.id!==id);save();render()}
+function snow(d){U.snowYr=Math.max(0,Math.min(30,U.snowYr+d));render()}
+function openSettings(focus){U.settings=true;U.settingsFocus=focus||null;render()}
+function closeSettings(){if(!D.kids.length){alert("Add at least one kid first.");return}U.settings=false;U.kid=Math.min(U.kid,D.kids.length-1);render()}
+function setRate(r){if(!(r>=0&&r<=.5)){alert("Pick a rate between 0% and 50%.");return}D.rate=r;U.mkStart=null;save();render()}
+function setMile(i,val){const n=parseInt(val);const miles=D.miles.slice();if(n>0)miles[i]=n;else miles.splice(i,1);D.miles=[...new Set(miles.filter(x=>x>0))].sort((a,b)=>a-b);if(!D.miles.includes(D.goal))D.goal=D.miles[D.miles.length-1]||30;save();render()}
+function addKid(){const name=prompt("Kid's name?");if(!name||!name.trim())return;const age=parseInt(prompt("How old?","6"));D.kids.push({id:uid("k"),name:name.trim(),born:bornFromAge(isNaN(age)?6:age),txns:[]});save();render()}
+function removeKid(i){const k=D.kids[i];if(!confirm(`Remove ${k.name} and all of their history? Export a backup first if you're not sure.`))return;D.kids.splice(i,1);if(U.kid>=D.kids.length)U.kid=Math.max(0,D.kids.length-1);save();render()}
+function copyLink(btn){const url=location.href.split("#")[0].split("?")[0];(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>{btn.textContent="Copied";setTimeout(()=>btn.textContent="Copy",1500)}).catch(()=>{const i=btn.previousElementSibling;i.select();document.execCommand("copy");btn.textContent="Copied";setTimeout(()=>btn.textContent="Copy",1500)})}
+
+// ═══════════════════════════════════════════════════════════
+//  DEMO DATA  (setup screen → "Try it with sample data", or open index.html#demo)
+// ═══════════════════════════════════════════════════════════
+function demoData(){
+  const y=new Date().getFullYear(),d=(m,dd,yo=0)=>`${y-yo}-${String(m).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
+  const today=todayISO();const clampD=s=>s>today?today:s;
+  const T=(date,desc,amt,type,seq)=>({id:uid("t"),date:clampD(date),desc,amt,type,seq});
+  return {v:3,family:"Sample",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,
+    earn:"A on a report card — $25\nB — $10\nDid something without being asked — $15\nDid the right thing when it was hard — $10",
+    kids:[
+      {id:uid("k"),name:"Caroline",born:bornFromAge(6.5),txns:[
+        T(d(10,15,1),"Opening deposit",100,"earn",0),T(d(12,20,1),"Report card — 3 A's",75,"earn",1),T(d(2,3),"Cleaned the garage without being asked",15,"earn",2),
+        T(d(3,14),"Lego set",40,"spend",3),T(d(5,22),"Report card — 4 A's",100,"earn",4),T(d(7,4),"Water balloons",12,"spend",5),
+        T(d(8,30),"Told the truth about the window",10,"earn",6),T(d(10,2),"Report card — 3 A's",75,"earn",7)]},
+      {id:uid("k"),name:"Liv",born:bornFromAge(4.3),txns:[
+        T(d(10,15,1),"Opening deposit",100,"earn",0),T(d(1,10),"Shared with her brother all week",10,"earn",1),T(d(4,20),"Stuffed animal",18,"spend",2),T(d(5,22),"Learned to swim across the pool",25,"earn",3),T(d(9,12),"Helped Grandma in the garden",10,"earn",4)]}
+    ]};
+}
+function loadDemo(){D=demoData();U.kid=0;U.tab="grow";save();render()}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+load();
+{const h=location.hash.slice(1).split(",").filter(Boolean);
+ if(h.includes("demo")&&!D){D=demoData();save()}
+ if(D){if(h.includes("history"))U.tab="history";else if(h.includes("learn"))U.tab="learn";if(h.includes("spend")){U.spend=true}if(h.includes("market")){U.market=true}}}
+render();
+let rT;window.addEventListener("resize",()=>{clearTimeout(rT);rT=setTimeout(()=>{if(D&&D.kids.length)afterRender(view())},120)});
+</script>
+</body>
+</html>
