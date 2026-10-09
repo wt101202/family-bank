@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#064E3B">
 <title>Family Bank</title>
+<meta name="description" content="A bank for your kids that pays interest, shows them the snowball, and tells them what every purchase really costs.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Family Bank — watch your money grow">
+<meta property="og:description" content="A bank for your kids that pays interest, shows them the snowball, and tells them what every purchase really costs. Free, private, no account.">
+<meta property="og:image" content="https://wt101202.github.io/family-bank/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:url" content="https://wt101202.github.io/family-bank/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Family Bank">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -132,14 +146,30 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
 
 /* ── History ── */
 .ledger{margin-top:8px}
-.tx{display:grid;grid-template-columns:52px 1fr auto;gap:12px;padding:13px 2px;border-bottom:1px solid var(--n100);align-items:center}
+.tx{display:grid;grid-template-columns:52px 1fr auto;gap:12px;padding:13px 6px;border-bottom:1px solid var(--n100);align-items:center}
 .tx .d{font-size:11px;color:var(--n400);font-weight:600;line-height:1.3}
 .tx .t{font-size:14px;color:var(--n800);font-weight:600}
 .tx .er{display:inline-block;margin-top:3px;font-size:11px;font-weight:700;color:var(--r600);background:var(--r50);padding:2px 8px;border-radius:100px}
 .tx .amt{font-size:15px;font-weight:800;text-align:right}
 .tx .amt.earn{color:var(--g600)}.tx .amt.spend{color:var(--r600)}
 .tx .x{color:var(--n300);font-size:16px;padding:2px 6px;border-radius:6px}
-.tx .x:hover{background:var(--r50);color:var(--r500)}
+.tx{cursor:pointer;border-radius:10px;transition:background .12s}
+.tx:hover,.tx:active{background:var(--n50)}
+.tx .chev{color:var(--n300);font-size:18px;line-height:1}
+.tx.editing{background:var(--g50)}
+.quick{display:flex;gap:8px;margin-top:16px}
+.quick .btn{flex:1;padding:12px}
+.nudge{margin-top:14px;border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center;font-size:13px;line-height:1.45;color:var(--n700);background:var(--y50);border:1.5px solid var(--y200)}
+.nudge b{color:var(--n900)}
+.nudge .acts{display:flex;gap:6px;flex-shrink:0}
+.nudge.ios{background:#EFF6FF;border-color:#BFDBFE}
+.setup .ios-tip{margin-top:16px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--n700);line-height:1.5}
+.kid-row2{display:grid;grid-template-columns:1.3fr 1fr 34px;gap:8px;align-items:end;margin-bottom:8px}
+.kid-row2 .lbl{font-size:10px;margin-bottom:4px}
+.kid-row2 .inp{padding:10px 12px}
+.newkid{display:grid;grid-template-columns:1.3fr .6fr auto;gap:8px;align-items:end;margin-top:6px}
+.newkid .inp{padding:10px 12px}
+.form h4{font-size:13px;font-weight:800;color:var(--n900);margin-bottom:10px}
 .empty-state{text-align:center;padding:36px 10px;color:var(--n400);font-size:14px;line-height:1.5}
 .form{background:var(--n50);border-radius:16px;padding:18px;margin-top:14px;border:1px solid var(--n100)}
 .form .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -159,7 +189,7 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
 .stepper button{width:40px;height:40px;border-radius:12px;background:var(--n100);font-size:18px;font-weight:800;color:var(--n700)}
 .stepper button:hover{background:var(--n200)}
 .stepper .yr{font-size:15px;font-weight:800;color:var(--n900);min-width:80px;text-align:center}
-.snow-say{margin-top:12px;background:var(--g50);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.55;color:var(--n800);text-align:center;min-height:72px;display:flex;align-items:center;justify-content:center}
+.snow-say{margin-top:12px;background:var(--g50);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.55;color:var(--n800);text-align:center;min-height:72px}
 .snow-say b{color:var(--g700)}
 .bigstat{display:flex;gap:10px;margin-top:14px}
 .bigstat div{flex:1;background:var(--n50);border-radius:14px;padding:14px;text-align:center}
@@ -190,6 +220,9 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
 .foot a{color:var(--n400)}
 
 @media(max-width:600px){
+  .nudge{flex-direction:column;align-items:stretch}
+  .nudge .acts .btn{flex:1}
+  .stat .k{white-space:nowrap;font-size:10.5px}
   .hdr{padding:18px 16px 58px}
   .card{padding:18px 16px;border-radius:16px}
   .hero .big{font-size:44px}
@@ -319,6 +352,8 @@ function migrate(d){
   }));
   return {v:3,family:d.familyName||d.family||"",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids};
 }
+// Round a chart max up to a clean 4-step axis (e.g. 4,394 -> 6,000 with steps of 1,500)
+function niceMax(v){if(!(v>0))return 4;const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw)));const step=[1,1.5,2,2.5,3,4,5,6,8,10].map(m=>m*p).find(s=>s>=raw);return step*4}
 /*ENGINE-END*/
 
 // ═══════════════════════════════════════════════════════════
@@ -326,6 +361,7 @@ function migrate(d){
 // ═══════════════════════════════════════════════════════════
 const fmt=v=>(v<0?"-":"")+"$"+Math.round(Math.abs(v)).toLocaleString();
 const fmtK=v=>v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v>=1e4?"$"+Math.round(v/1e3)+"k":v>=1e3?"$"+(v/1e3).toFixed(1)+"k":"$"+Math.round(v);
+const fmtAxis=v=>v>=1e6?"$"+(Math.round(v/1e5)/10)+"M":"$"+Math.round(v).toLocaleString();
 const pct1=r=>Math.round(r*1000)/10;                 // 0.07 → 7 (no float noise)
 const fmtPct=r=>{const p=pct1(r);return (p%1?p.toFixed(1):p.toFixed(0))+"%"};
 const fmtDay=iso=>{const d=parseD(iso);return (d.getMonth()+1)+"/"+d.getDate()};
@@ -338,7 +374,8 @@ const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 //  STATE
 // ═══════════════════════════════════════════════════════════
 let D=null;           // persisted data
-let U={kid:0,tab:"grow",spend:false,spendAmt:40,market:false,mkStart:null,form:false,ftype:"earn",snowYr:1,settings:false,learnStart:null};
+const U0=()=>({kid:0,tab:"grow",spend:false,spendAmt:40,market:false,mkStart:null,form:false,ftype:"earn",editId:null,snowYr:1,playing:false,settings:false,learnStart:null});
+let U=U0();
 
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(D))}catch(e){}}
 function load(){
@@ -351,6 +388,7 @@ function exportData(){
   const blob=new Blob([JSON.stringify(D,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download=(D.family||"family").replace(/\s+/g,"_").toLowerCase()+"_bank_"+todayISO()+".json";a.click();URL.revokeObjectURL(a.href);
+  D.lastBackup=todayISO();save();if(document.querySelector(".nudge.backup"))render();
 }
 function importData(){
   const inp=document.createElement("input");inp.type="file";inp.accept=".json,application/json";
@@ -359,7 +397,24 @@ function importData(){
     r.readAsText(f)};
   inp.click();
 }
-function resetAll(){if(confirm("Start over? This erases everything in this browser. Export first if you want a backup.")){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LEGACY_KEY);D=null;U={kid:0,tab:"grow",spend:false,spendAmt:40,market:false,mkStart:null,form:false,ftype:"earn",snowYr:1,settings:false,learnStart:null};render()}}
+function resetAll(){if(confirm("Start over? This erases everything in this browser. Export first if you want a backup.")){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LEGACY_KEY);D=null;U=U0();render()}}
+
+const isIOS=()=>typeof navigator!=="undefined"&&(/iPhone|iPad|iPod/.test(navigator.userAgent||"")||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1));
+const isStandalone=()=>navigator.standalone===true||!!(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches);
+const daysSince=iso=>iso?Math.floor((parseD(todayISO())-parseD(iso))/DAY):Infinity;
+function renderNudges(){
+  let out="";
+  const first=D.kids.flatMap(k=>k.txns.map(t=>t.date)).sort()[0];
+  const hasTx=!!first&&daysSince(first)>14;
+  if(hasTx&&daysSince(D.lastBackup)>30&&daysSince(D.snooze)>7){
+    const ago=D.lastBackup?`${daysSince(D.lastBackup)} days ago`:"never";
+    out+=`<div class="nudge backup"><div>&#128190; <b>Back up your bank.</b> It lives only on this phone. Last backup: ${ago}.</div><div class="acts"><button class="btn btn-primary btn-sm" onclick="exportData()">Back up</button><button class="btn btn-ghost btn-sm" onclick="D.snooze=todayISO();save();render()">Later</button></div></div>`;
+  }
+  if(isIOS()&&!isStandalone()&&!D.a2hsDone){
+    out+=`<div class="nudge ios"><div>&#128241; <b>On iPhone, keep it on your Home Screen.</b> Safari can clear websites you don't open for a week. Tap <b>Back up</b>, then Share &rarr; <b>Add to Home Screen</b>, open it from there and tap <b>Import a backup</b>.</div><div class="acts"><button class="btn btn-ghost btn-sm" onclick="D.a2hsDone=true;save();render()">Got it</button></div></div>`;
+  }
+  return out;
+}
 
 // ═══════════════════════════════════════════════════════════
 //  CHART RENDERER (canvas, zero deps)
@@ -370,15 +425,17 @@ function drawChart(canvas,cfg){
   const ctx=canvas.getContext("2d"),dpr=window.devicePixelRatio||1;
   const W=canvas.clientWidth||600,H=canvas.clientHeight||280;
   canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
-  const pad={t:14,r:16,b:28,l:50},pW=W-pad.l-pad.r,pH=H-pad.t-pad.b;
+  const pad={t:14,r:16,b:28,l:62},pW=W-pad.l-pad.r,pH=H-pad.t-pad.b;
   let yMax=0;cfg.layers.forEach(L=>{(L.pts||L.upper||[]).forEach(p=>{if(p.y>yMax)yMax=p.y})});
-  yMax=yMax*1.1||1;
+  yMax=niceMax(yMax*1.04);
   const xOf=x=>pad.l+((x-cfg.xMin)/((cfg.xMax-cfg.xMin)||1))*pW, yOf=y=>pad.t+pH-(y/yMax)*pH;
   // grid + y labels
   ctx.font="11px -apple-system,system-ui,sans-serif";ctx.lineWidth=1;
   for(let i=0;i<=4;i++){const y=pad.t+pH*i/4;ctx.strokeStyle="#EEF1F0";ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
-    ctx.fillStyle="#9CA3AF";ctx.textAlign="right";ctx.fillText((cfg.yFmt||fmtK)(yMax*(1-i/4)),pad.l-8,y+4)}
-  ctx.textAlign="center";(cfg.xTicks||[]).forEach(t=>{const x=xOf(t.x);if(x<pad.l-1||x>W-pad.r+1)return;ctx.fillStyle="#9CA3AF";ctx.fillText(t.label,x,H-9)});
+    ctx.fillStyle="#9CA3AF";ctx.textAlign="right";ctx.fillText((cfg.yFmt||fmtAxis)(yMax*(1-i/4)),pad.l-8,y+4)}
+  (cfg.xTicks||[]).forEach(t=>{const x=xOf(t.x);if(x<pad.l-1||x>W-pad.r+1)return;ctx.fillStyle="#9CA3AF";const tw=ctx.measureText(t.label).width;
+    if(x+tw/2>W-2){ctx.textAlign="right";ctx.fillText(t.label,W-2,H-9)}else{ctx.textAlign="center";ctx.fillText(t.label,x,H-9)}});
+  if(cfg.xLabel){ctx.textAlign="right";ctx.fillStyle="#6B7280";ctx.font="700 11px -apple-system,system-ui,sans-serif";ctx.fillText(cfg.xLabel,pad.l-8,H-9);ctx.font="11px -apple-system,system-ui,sans-serif"}
   // dense paths (>60 pts) draw as straight segments; sparse paths get monotone bezier smoothing
   const path=(pts)=>{const dense=pts.length>60;pts.forEach((p,i)=>{const x=xOf(p.x),y=yOf(p.y);if(!i)ctx.moveTo(x,y);else if(dense)ctx.lineTo(x,y);else{const q=pts[i-1],qx=xOf(q.x),qy=yOf(q.y),mx=(qx+x)/2;ctx.bezierCurveTo(mx,qy,mx,y,x,y)}})};
   const pathRev=(pts)=>{const dense=pts.length>60;for(let i=pts.length-1;i>=0;i--){const x=xOf(pts[i].x),y=yOf(pts[i].y);if(i===pts.length-1||dense)ctx.lineTo(x,y);else{const q=pts[i+1],qx=xOf(q.x),qy=yOf(q.y),mx=(qx+x)/2;ctx.bezierCurveTo(mx,qy,mx,y,x,y)}}};
@@ -416,11 +473,12 @@ function drawSnow(canvas,rows,upto,rate){
   const ctx=canvas.getContext("2d"),dpr=window.devicePixelRatio||1;
   const W=canvas.clientWidth||600,H=canvas.clientHeight||240;
   canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
-  const pad={t:10,r:10,b:26,l:50},pW=W-pad.l-pad.r,pH=H-pad.t-pad.b;
-  const N=rows.length,yMax=rows[N-1].v*1.08;
+  const pad={t:10,r:10,b:26,l:62},pW=W-pad.l-pad.r,pH=H-pad.t-pad.b;
+  const N=rows.length,yMax=niceMax(rows[N-1].v*1.03);
   const bw=pW/N,gap=Math.min(4,bw*.25);
   ctx.font="11px -apple-system,system-ui,sans-serif";
-  for(let i=0;i<=4;i++){const y=pad.t+pH*i/4;ctx.strokeStyle="#EEF1F0";ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle="#9CA3AF";ctx.textAlign="right";ctx.fillText(fmtK(yMax*(1-i/4)),pad.l-8,y+4)}
+  for(let i=0;i<=4;i++){const y=pad.t+pH*i/4;ctx.strokeStyle="#EEF1F0";ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle="#9CA3AF";ctx.textAlign="right";ctx.fillText(fmtAxis(yMax*(1-i/4)),pad.l-8,y+4)}
+  ctx.textAlign="right";ctx.fillStyle="#6B7280";ctx.font="700 11px -apple-system,system-ui,sans-serif";ctx.fillText("Year",pad.l-8,H-8);ctx.font="11px -apple-system,system-ui,sans-serif";
   rows.forEach((r,i)=>{
     const x=pad.l+i*bw+gap/2,w=bw-gap,on=i<=upto,cur=i===upto;
     const hp=(r.put/yMax)*pH,hg=(r.growth/yMax)*pH;
@@ -458,6 +516,7 @@ function render(){
   root.innerHTML=`<div class="app">
     ${renderHeader(v)}
     ${v?renderHero(v):""}
+    ${v&&U.tab==="grow"?renderNudges():""}
     ${v?`<div class="tabs">
       <button class="tab ${U.tab==="grow"?"on":""}" onclick="go('grow')">Grow</button>
       <button class="tab ${U.tab==="history"?"on":""}" onclick="go('history')">History</button>
@@ -483,7 +542,8 @@ function renderHero(v){
   <div class="split">Earned ${fmt(v.sim.put)}${v.sim.spent>0?` &middot; Spent ${fmt(v.sim.spent)}`:""} &middot; Grew <b>+${fmt(Math.max(0,v.sim.growth))}</b></div>
   <div class="stats"><div class="stat"><div class="k">At age ${v.goal}</div><div class="v" style="color:var(--g600)">${fmt(atGoal)}</div></div>
   <div class="stat"><div class="k">Growth rate</div><div class="v" style="color:var(--n700)">${fmtPct(v.rate)}/yr</div></div>
-  <div class="stat"><div class="k">Spending cost so far</div><div class="v" style="color:${v.sim.spent>0?"var(--r600)":"var(--n300)"}">${v.sim.spent>0?"-"+fmt(v.ghost.balance-v.sim.balance):"—"}</div></div></div></div>`;
+  <div class="stat"><div class="k">Spending has cost</div><div class="v" style="color:${v.sim.spent>0?"var(--r600)":"var(--n300)"}">${v.sim.spent>0?"-"+fmt(v.ghost.balance-v.sim.balance):"—"}</div></div></div>
+  <div class="quick"><button class="btn btn-primary" onclick="quickAdd('earn')">+ Earned money</button><button class="btn btn-ghost" style="color:var(--r600)" onclick="quickAdd('spend')">&minus; Spent money</button></div></div>`;
 }
 
 // ── GROW ──
@@ -499,7 +559,7 @@ function renderGrow(v){
     <div class="sub">${U.spend?"Green is what you keep. Red is what's gone.":U.market?`What actually happened starting in ${mk.startYear}`:`${fmtPct(v.rate)} a year, every year`}</div></div>
     <div class="seg"><button class="${!U.market?"on":""}" onclick="setMarket(false)">Smooth</button><button class="${U.market?"on":""}" onclick="setMarket(true)">Real market</button></div></div>
     <div class="chart"><canvas id="cGrow"></canvas><div class="tip" id="tGrow"></div></div>
-    ${U.market?`<div class="legend"><span><i style="background:#2563EB"></i>Real market ${mk.startYear}–${mk.endYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
+    ${U.market?`<div class="legend"><span><i style="background:#2563EB"></i>Real market from ${mk.startYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
       <div class="caption">If ${esc(v.k.name)} had started in <b>${mk.startYear}</b>: worst year was <span class="bad">${mk.worst.year} (${mk.worst.ret.toFixed(0)}%)</span>. It still ended at <b>${fmt(mk.end)}</b> vs ${fmt(smoothEnd)} on the smooth line. Some stretches do better, some worse — that's why we say "about ${fmtPct(SP_CAGR)}."</div>
       <div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="shuffle()">&#x21bb; Try a different start year</button></div>`:""}
     ${U.spend?`<div class="legend"><span><i style="background:#10B981"></i>What you keep</span><span><i style="background:#EF4444;opacity:.7"></i>Erased by spending</span></div>`:""}
@@ -535,34 +595,36 @@ function renderHistory(v){
     ${v.sim.spent>0?`<div class="cost-line">Spending has cost <b>${fmt(costSoFar)}</b> so far — ${fmt(v.sim.spent)} spent, plus ${fmt(costSoFar-v.sim.spent)} it would have grown into by today.</div>`:""}
   </div>
 
-  <div class="card"><div class="row"><h2>Ledger</h2><button class="btn btn-primary btn-sm" onclick="toggleForm()">${U.form?"Close":"+ Add"}</button></div>
+  <div class="card"><div class="row"><div><h2>Ledger</h2><div class="sub">Tap any line to fix or remove it</div></div><button class="btn btn-primary btn-sm" onclick="toggleForm()">${U.form?"Close":"+ Add"}</button></div>
     ${U.form?renderForm(v):""}
     <div class="ledger">${txs.length?txs.map(t=>{
       const a=ageAt(v.k.born,t.date),er=t.type==="spend"?erasedAt(t.amt,v.rate,a,v.goal):0;
-      return `<div class="tx"><div class="d">${fmtDay(t.date)}<br>${fmtYr(t.date)}</div><div><div class="t">${esc(t.desc)||(t.type==="earn"?"Earned":"Spent")}</div>${t.type==="spend"&&er>0?`<span class="er">erased ${fmt(er)} @ ${v.goal}</span>`:""}</div>
-        <div style="display:flex;align-items:center;gap:6px"><div class="amt ${t.type}">${t.type==="earn"?"+":"-"}${fmt(t.amt)}</div><button class="x" onclick="delTx('${t.id}')" title="Remove">&times;</button></div></div>`}).join("")
+      return `<div class="tx ${U.editId===t.id?"editing":""}" onclick="editTx('${t.id}')" title="Tap to edit"><div class="d">${fmtDay(t.date)}<br>${fmtYr(t.date)}</div><div><div class="t">${esc(t.desc)||(t.type==="earn"?"Earned":"Spent")}</div>${t.type==="spend"&&er>0?`<span class="er">erased ${fmt(er)} @ ${v.goal}</span>`:""}</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="amt ${t.type}">${t.type==="earn"?"+":"-"}${fmt(t.amt)}</div><span class="chev">&rsaquo;</span></div></div>`}).join("")
       :`<div class="empty-state">Nothing yet. Tap <b>+ Add</b> to put in the first dollar.</div>`}</div>
   </div>`;
 }
 function renderForm(v){
   const isSpend=U.ftype==="spend";
-  return `<div class="form">
+  const e=U.editId?v.k.txns.find(t=>t.id===U.editId):null;
+  return `<div class="form" id="txForm">${e?`<h4>Edit this entry</h4>`:""}
     <div class="seg ${isSpend?"spend":"earn"}" style="display:flex;margin-bottom:12px"><button style="flex:1" class="${!isSpend?"on":""}" onclick="setFType('earn')">Earned</button><button style="flex:1" class="${isSpend?"on":""}" onclick="setFType('spend')">Spent</button></div>
-    <div class="grid"><div class="full"><label class="lbl">What for?</label><input class="inp" id="fDesc" placeholder="${isSpend?"Lego set":"Report card — 3 A's"}" oninput="liveReceipt()"></div>
-    <div><label class="lbl">Amount</label><input class="inp" id="fAmt" type="number" inputmode="decimal" min="0" step="1" placeholder="0" oninput="liveReceipt()"></div>
-    <div><label class="lbl">Date</label><input class="inp" id="fDate" type="date" value="${todayISO()}" max="${todayISO()}" onchange="liveReceipt()"></div></div>
+    <div class="grid"><div class="full"><label class="lbl">What for?</label><input class="inp" id="fDesc" placeholder="${isSpend?"Lego set":"Report card — 3 A's"}" value="${e?esc(e.desc):""}" oninput="liveReceipt()"></div>
+    <div><label class="lbl">Amount</label><input class="inp" id="fAmt" type="number" inputmode="decimal" min="0" step="1" placeholder="0" value="${e?e.amt:""}" oninput="liveReceipt()"></div>
+    <div><label class="lbl">Date</label><input class="inp" id="fDate" type="date" value="${e?e.date:todayISO()}" max="${todayISO()}" onchange="liveReceipt()"></div></div>
     <div id="receipt"></div>
-    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn btn-ghost" onclick="toggleForm()">Cancel</button><button class="btn ${isSpend?"btn-danger":"btn-primary"}" id="fGo" onclick="addTx()">${isSpend?"Spend it":"Add it"}</button></div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">${e?`<button class="btn btn-ghost" style="color:var(--r600);margin-right:auto" onclick="delTx('${e.id}')">Remove</button>`:""}<button class="btn btn-ghost" onclick="toggleForm()">Cancel</button><button class="btn ${isSpend?"btn-danger":"btn-primary"}" id="fGo" onclick="addTx()">${e?"Save":isSpend?"Spend it":"Add it"}</button></div>
   </div>`;
 }
+function availBal(v){return U.editId?Math.max(0,simulate(v.k.txns.filter(t=>t.id!==U.editId),v.rate,v.today).balance):v.bal}
 function liveReceipt(){
   const v=view(),box=document.getElementById("receipt");if(!box)return;
   const amt=parseFloat(document.getElementById("fAmt").value)||0,date=document.getElementById("fDate").value||todayISO();
   if(U.ftype!=="spend"||amt<=0){box.innerHTML="";return}
-  const a=ageAt(v.k.born,date);
+  const a=ageAt(v.k.born,date),avail=availBal(v);
   const lines=v.miles.map(m=>`<span>Age ${m}: <b>-${fmt(erasedAt(amt,v.rate,a,m))}</b></span>`).join("");
-  const over=amt>v.bal+0.005;
-  box.innerHTML=`<div class="receipt"><div class="h">This ${fmt(amt)} erases</div><div class="lines">${lines}</div>${over?`<div style="margin-top:8px;font-size:12px;color:var(--r600);font-weight:700">That's more than ${esc(v.k.name)} has (${fmt(v.bal)}).</div>`:""}</div>`;
+  const over=amt>avail+0.005;
+  box.innerHTML=`<div class="receipt"><div class="h">This ${fmt(amt)} erases</div><div class="lines">${lines}</div>${over?`<div style="margin-top:8px;font-size:12px;color:var(--r600);font-weight:700">That's more than ${esc(v.k.name)} has (${fmt(avail)}).</div>`:""}</div>`;
   const go=document.getElementById("fGo");if(go)go.disabled=over;
 }
 
@@ -577,7 +639,7 @@ function renderLearn(v){
   <div class="card learn"><h2>The snowball</h2><div class="sub">Why leaving money alone makes more money</div>
     <div class="chart" style="height:220px"><canvas id="cSnow"></canvas></div>
     <div class="legend"><span><i style="background:#059669"></i>Money ${esc(v.k.name)} put in</span><span><i style="background:#6EE7B7"></i>Money the money made</span></div>
-    <div class="stepper"><button onclick="snow(-1)">&minus;</button><div class="yr">Year ${U.snowYr}</div><button onclick="snow(1)">+</button></div>
+    <div class="stepper"><button onclick="snow(-1)">&minus;</button><div class="yr">Year ${U.snowYr}</div><button onclick="snow(1)">+</button><button class="btn btn-primary btn-sm" style="width:auto;height:40px;margin-left:6px" onclick="playSnow()">${U.playing?"&#10074;&#10074; Pause":"&#9654; Play"}</button></div>
     <div class="snow-say">${U.snowYr===0?`You put in <b>${fmt(P)}</b>. That's it. Now wait.`:
       U.snowYr===1?`Year 1: your ${fmt(P)} made <b>${fmt(cur.made)}</b>. Now you have <b>${fmt(cur.v)}</b>.`:
       `Year ${U.snowYr}: it made <b>${fmt(cur.made)}</b> this year — more than last year, because the money it already made is making money too. Now <b>${fmt(cur.v)}</b>.`}</div>
@@ -592,7 +654,7 @@ function renderLearn(v){
 
   <div class="card learn"><div class="row"><div><h2>Why it's bumpy</h2><div class="sub">The same ${fmt(P)}, smooth vs. what really happened</div></div><button class="btn btn-ghost btn-sm" onclick="learnShuffle()">&#x21bb; Different years</button></div>
     <div class="chart" style="height:220px"><canvas id="cBump"></canvas><div class="tip" id="tBump"></div></div>
-    <div class="legend"><span><i style="background:#2563EB"></i>Real market ${mk.startYear}–${mk.endYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
+    <div class="legend"><span><i style="background:#2563EB"></i>Real market from ${mk.startYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
     <div class="bigstat"><div><div class="k">Years the market<br>went down</div><div class="v red" style="white-space:nowrap">${SP_NEG} of ${SP.length}</div></div><div><div class="k">Worst single year<br>(${SP_START+SP.indexOf(Math.min(...SP))})</div><div class="v red">${Math.min(...SP).toFixed(0)}%</div></div><div><div class="k">Average, all<br>100 years</div><div class="v green">+${fmtPct(SP_CAGR)}</div></div></div>
     <p>Some years it drops — about <b>1 in every 4</b>. People who get scared and pull their money out lock in the loss. People who <b>leave it alone</b> ride it back up. Every single 20-year stretch in the last century ended higher than it started.</p>
   </div>`;
@@ -610,12 +672,11 @@ function renderSettings(){
       <div class="presets">${PRESETS.map(p=>`<button class="preset ${Math.abs(p.r-D.rate)<1e-9?"on":""}" onclick="setRate(${p.r})">${p.l}</button>`).join("")}<button class="preset ${isPreset?"":"on"}" onclick="document.getElementById('sRate').focus()">Custom</button></div>
       <div class="rate-row"><input class="inp" id="sRate" type="number" inputmode="decimal" step="0.5" min="0" max="50" value="${pct1(D.rate)}" onchange="setRate(parseFloat(this.value)/100)"><span style="font-size:14px;color:var(--n500)">% per year</span></div></div>
 
-    <div class="sect"><h3>Kids</h3><div class="hint">Age is remembered as a birth month so it keeps up on its own.</div>
-      <div style="margin-top:10px">${D.kids.map((k,i)=>`<div class="kid-row"><div><div class="lbl">Name</div><input class="inp" value="${esc(k.name)}" onchange="D.kids[${i}].name=this.value.trim()||'Kid';save()"></div>
-        <div><div class="lbl">Age</div><input class="inp" type="number" inputmode="numeric" min="0" max="25" value="${Math.floor(ageNow(k.born))}" onchange="D.kids[${i}].born=bornFromAge(parseInt(this.value)||0);save()"></div>
-        <div><div class="lbl">Born</div><input class="inp" type="month" value="${k.born}" onchange="if(this.value){D.kids[${i}].born=this.value;save()}"></div>
+    <div class="sect"><h3>Kids</h3><div class="hint">Saved as a birthday month, so ages keep up on their own.</div>
+      <div style="margin-top:10px">${D.kids.map((k,i)=>`<div class="kid-row2"><div><div class="lbl">Name</div><input class="inp" value="${esc(k.name)}" onchange="D.kids[${i}].name=this.value.trim()||'Kid';save()"></div>
+        <div><div class="lbl">Birthday month &middot; age ${Math.floor(ageNow(k.born))}</div><input class="inp" type="month" value="${k.born}" max="${todayISO().slice(0,7)}" onchange="if(this.value){D.kids[${i}].born=this.value;save();render()}"></div>
         <button class="icon-btn" onclick="removeKid(${i})" title="Remove">&times;</button></div>`).join("")}</div>
-      <button class="btn btn-soft btn-block btn-sm" onclick="addKid()">+ Add a kid</button></div>
+      <div class="newkid"><div><div class="lbl">Add a kid</div><input class="inp" id="nkName" placeholder="Name"></div><div><div class="lbl">Age</div><input class="inp" id="nkAge" type="number" inputmode="numeric" min="0" max="25" placeholder="5"></div><button class="btn btn-soft" style="height:42px" onclick="addKid()">+ Add</button></div></div>
 
     <div class="sect"><h3>Milestone ages</h3><div class="hint">The ages shown on the Grow tab. Pick one as the goal — it's the number on the hero card and on every purchase receipt.</div>
       <div class="miles-row">${[0,1,2,3,4].map(i=>`<input class="inp" type="number" inputmode="numeric" min="1" max="100" value="${D.miles[i]??""}" onchange="setMile(${i},this.value)">`).join("")}</div>
@@ -640,8 +701,10 @@ function renderSetup(root){
     <div class="sub">A bank for your kids that pays interest, shows them the snowball, and tells them what every purchase really costs.</div>
     <div class="field"><label>Family name</label><input class="inp" id="sFamily" placeholder="Smith" value="${esc(U.setupFamily||"")}"></div>
     <div class="field"><label>Kids</label><div id="sKids"></div><button class="btn btn-soft btn-block btn-sm" onclick="setupAddKid()">+ Add another</button></div>
+    <div class="field"><label>What should the bank pay?</label><div class="presets" style="margin-top:0">${PRESETS.map(p=>`<button class="preset ${Math.abs(p.r-(U.setupRate??.10))<1e-9?"on":""}" onclick="setupRate(${p.r})">${p.l}</button>`).join("")}</div><div class="hint" style="font-size:12px;color:var(--n400);margin-top:6px;line-height:1.45">A year's growth on every dollar. The stock market has averaged about 10%. You can change it any time in Settings.</div></div>
     <button class="btn btn-primary btn-block" style="margin-top:22px;padding:14px;font-size:16px" onclick="finishSetup()">Open the bank</button>
     <div class="note">Everything saves in this browser automatically.<br>No account, no server, nothing leaves your device.</div>
+    ${isIOS()&&!isStandalone()?`<div class="ios-tip">&#128241; <b>On iPhone:</b> tap Share &rarr; <b>Add to Home Screen</b> first, then open it from your Home Screen and set up there. Safari can clear websites you haven't opened in a week; the Home Screen app keeps your bank.</div>`:""}
     <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="loadDemo()">Try it with sample data</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import a backup</button></div>
   </div></div>`;
   renderSetupKids();
@@ -654,6 +717,7 @@ function renderSetupKids(){
     ${U.setupKids.length>1?`<button class="icon-btn" onclick="setupRemoveKid(${i})">&times;</button>`:"<div></div>"}</div>`).join("");
 }
 function setupSync(){U.setupFamily=(document.getElementById("sFamily")||{}).value||"";U.setupKids=U.setupKids.map((k,i)=>({name:(document.getElementById("sk_n"+i)||{}).value||"",age:(document.getElementById("sk_a"+i)||{}).value||"",bal:(document.getElementById("sk_b"+i)||{}).value||""}))}
+function setupRate(r){setupSync();U.setupRate=r;renderSetup(document.getElementById("root"))}
 function setupAddKid(){setupSync();U.setupKids.push({name:"",age:"",bal:""});renderSetupKids()}
 function setupRemoveKid(i){setupSync();U.setupKids.splice(i,1);renderSetupKids()}
 function finishSetup(){
@@ -661,7 +725,7 @@ function finishSetup(){
   const kids=U.setupKids.filter(k=>k.name.trim()).map((k,i)=>{const bal=parseFloat(k.bal)||0;return {id:uid("k"),name:k.name.trim(),born:bornFromAge(parseInt(k.age)||6),
     txns:bal>0?[{id:uid("t"),date:todayISO(),desc:"Opening deposit",amt:bal,type:"earn",seq:0}]:[]}});
   if(!kids.length){alert("Add at least one kid.");return}
-  D={v:3,family:(U.setupFamily||"").trim()||"Our",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids};
+  D={v:3,family:(U.setupFamily||"").trim()||"Our",rate:U.setupRate??.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids};
   U.kid=0;U.tab="grow";save();render();
 }
 
@@ -687,18 +751,18 @@ function drawGrow(v){
     const wi=mk.path.findIndex(p=>p.year===mk.worst.year);
     hoverPts=mk.path.map(p=>({x:p.age,y:p.v}));
     tip=i=>{const p=mk.path[i],s=smooth[i];return `<b>Age ${Math.floor(p.age)}${i?` · ${p.year}`:""}</b><div class="l"><span>Real market</span><span style="color:#2563EB;font-weight:700">${fmt(p.v)}</span></div><div class="l"><span>Smooth</span><span>${fmt(s.v)}</span></div>${i?`<div class="l"><span>${p.year} return</span><span style="color:${SP[p.year-SP_START]<0?"#DC2626":"#059669"};font-weight:700">${SP[p.year-SP_START]>0?"+":""}${SP[p.year-SP_START].toFixed(0)}%</span></div>`:""}`};
-    drawChart(c,{xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip,marks:wi>0?[{x:mk.path[wi].age,y:mk.path[wi].v,text:`${mk.worst.year}: ${mk.worst.ret.toFixed(0)}%`,color:"#DC2626"}]:[]});
+    drawChart(c,{xLabel:"Age",xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip,marks:wi>0?[{x:mk.path[wi].age,y:mk.path[wi].v,text:`${mk.worst.year}: ${mk.worst.ret.toFixed(0)}%`,color:"#DC2626"}]:[]});
   }else if(U.spend&&U.spendAmt>0){
     const kept=projectPath(Math.max(0,v.bal-U.spendAmt),v.rate,v.age,v.H);
     const keptD=projectPath(Math.max(0,v.bal-U.spendAmt),v.rate,v.age,v.H,.25);
     layers=[{type:"area",pts:keptD.map(p=>({x:p.age,y:p.v})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]},
             {type:"band",upper:smoothD.map(p=>({x:p.age,y:p.v})),lower:keptD.map(p=>({x:p.age,y:p.v})),color:"#EF4444",grad:["rgba(239,68,68,.22)","rgba(239,68,68,.04)"]}];
     tip=i=>{const s=smooth[i],k=kept[i];return `<b>Age ${Math.floor(s.age)}</b><div class="l"><span>If you keep it</span><span style="color:#059669;font-weight:700">${fmt(s.v)}</span></div><div class="l"><span>If you spend ${fmt(U.spendAmt)}</span><span>${fmt(k.v)}</span></div><div class="l"><span style="color:#DC2626">Erased</span><span style="color:#DC2626;font-weight:700">${fmt(s.v-k.v)}</span></div>`};
-    drawChart(c,{xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip});
+    drawChart(c,{xLabel:"Age",xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip});
   }else{
     layers=[{type:"area",pts:smoothD.map(p=>({x:p.age,y:p.v})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]}];
     tip=i=>{const s=smooth[i];return `<b>Age ${Math.floor(s.age)}</b><div class="l"><span>Balance</span><span style="color:#059669;font-weight:700">${fmt(s.v)}</span></div><div class="l"><span>Growth</span><span>+${fmt(s.v-v.bal)}</span></div>`};
-    drawChart(c,{xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip});
+    drawChart(c,{xLabel:"Age",xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip});
   }
   attachHover(c,t);
 }
@@ -707,7 +771,7 @@ function drawHist(v){
   const path=historyPath(v.k.txns,v.rate,v.today);
   if(!path.length){const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);return}
   const xMin=path[0].t,xMax=path[path.length-1].t,span=xMax-xMin;
-  const xTicks=[];const nT=Math.min(6,Math.max(2,Math.round(span/(45*DAY))));for(let i=0;i<=nT;i++){const tt=xMin+span*i/nT;xTicks.push({x:tt,label:span>400*DAY?String(new Date(tt).getFullYear()):fmtMonYr(tt)})}
+  const xTicks=[];const nT=Math.max(2,Math.min(6,Math.round(span/(45*DAY)),Math.floor(((c.clientWidth||600)-80)/64)));for(let i=0;i<=nT;i++){const tt=xMin+span*i/nT;xTicks.push({x:tt,label:span>400*DAY?String(new Date(tt).getFullYear()):fmtMonYr(tt)})}
   const dots=sortTx(v.k.txns).filter(tx=>tx.date>=path[0].iso).map(tx=>{const tt=parseD(tx.date).getTime();const b=simulate(v.k.txns,v.rate,tx.date).balance;return {x:tt,y:b,color:tx.type==="earn"?"#059669":"#EF4444",tx}});
   const layers=[{type:"line",pts:path.map(p=>({x:p.t,y:p.ghost})),color:"#9CA3AF",dash:[5,4],width:1.5},
                 {type:"area",pts:path.map(p=>({x:p.t,y:p.bal})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]}];
@@ -733,8 +797,8 @@ function drawBump(v){
 // ═══════════════════════════════════════════════════════════
 //  ACTIONS
 // ═══════════════════════════════════════════════════════════
-function go(tab){U.tab=tab;U.form=false;render()}
-function pickKid(i){U.kid=i;U.spend=false;U.market=false;U.mkStart=null;U.form=false;U.snowYr=1;render()}
+function go(tab){U.tab=tab;U.form=false;U.editId=null;U.playing=false;render()}
+function pickKid(i){U.kid=i;U.spend=false;U.market=false;U.mkStart=null;U.form=false;U.editId=null;U.snowYr=1;U.playing=false;render()}
 function toggleSpend(){U.spend=!U.spend;if(U.spend)U.market=false;render()}
 function setMarket(on){U.market=on;if(on){U.spend=false;const v=view();U.mkStart=randomStartIdx(v.H)}render()}
 function shuffle(){const v=view();let s;do{s=randomStartIdx(v.H)}while(s===U.mkStart&&maxStartIdx(v.H)>0);U.mkStart=s;render()}
@@ -748,25 +812,35 @@ function slide(val){
   v.miles.forEach(m=>{const e=document.querySelector(`[data-e="${m}"]`);if(e)e.textContent="-"+fmt(erasedAt(U.spendAmt,v.rate,v.age,m))});
   drawGrow(v);
 }
-function toggleForm(){U.form=!U.form;U.ftype="earn";render();if(U.form){const d=document.getElementById("fDesc");if(d)d.focus()}}
+function toggleForm(){U.form=!U.form;U.ftype="earn";U.editId=null;render();if(U.form){const d=document.getElementById("fDesc");if(d)d.focus()}}
+function quickAdd(type){U.tab="history";U.form=true;U.ftype=type;U.editId=null;render();const f=document.getElementById("txForm");if(f)f.scrollIntoView({block:"center"});const d=document.getElementById("fDesc");if(d)d.focus()}
+function editTx(id){const t=kid().txns.find(x=>x.id===id);if(!t)return;if(U.editId===id){toggleForm();return}U.form=true;U.editId=id;U.ftype=t.type;render();liveReceipt();const f=document.getElementById("txForm");if(f)f.scrollIntoView({block:"center"})}
 function setFType(t){U.ftype=t;const desc=(document.getElementById("fDesc")||{}).value,amt=(document.getElementById("fAmt")||{}).value,date=(document.getElementById("fDate")||{}).value;render();
   const D1=document.getElementById("fDesc"),A1=document.getElementById("fAmt"),T1=document.getElementById("fDate");if(D1)D1.value=desc||"";if(A1)A1.value=amt||"";if(T1&&date)T1.value=date;liveReceipt()}
 function addTx(){
   const desc=document.getElementById("fDesc").value.trim(),amt=parseFloat(document.getElementById("fAmt").value),date=document.getElementById("fDate").value;
   if(!(amt>0)){alert("Enter an amount.");return}
   if(!date||date>todayISO()){alert("Pick a date that isn't in the future.");return}
-  const v=view();
-  if(U.ftype==="spend"&&amt>v.bal+0.005){alert(`${v.k.name} only has ${fmt(v.bal)}.`);return}
-  const k=kid();k.txns.push({id:uid("t"),date,desc,amt:Math.round(amt*100)/100,type:U.ftype,seq:k.txns.length});
-  U.form=false;save();render();
+  const v=view(),avail=availBal(v);
+  if(U.ftype==="spend"&&amt>avail+0.005){alert(`${v.k.name} only has ${fmt(avail)}.`);return}
+  const k=kid(),rec={date,desc,amt:Math.round(amt*100)/100,type:U.ftype};
+  const e=U.editId&&k.txns.find(t=>t.id===U.editId);
+  if(e)Object.assign(e,rec);else k.txns.push({id:uid("t"),...rec,seq:k.txns.length});
+  U.form=false;U.editId=null;save();render();
 }
-function delTx(id){const k=kid();const t=k.txns.find(x=>x.id===id);if(!t)return;if(!confirm(`Remove "${t.desc||(t.type==="earn"?"Earned":"Spent")}" (${fmt(t.amt)})?`))return;k.txns=k.txns.filter(x=>x.id!==id);save();render()}
-function snow(d){U.snowYr=Math.max(0,Math.min(30,U.snowYr+d));render()}
+function delTx(id){const k=kid();const t=k.txns.find(x=>x.id===id);if(!t)return;if(!confirm(`Remove "${t.desc||(t.type==="earn"?"Earned":"Spent")}" (${fmt(t.amt)})?`))return;k.txns=k.txns.filter(x=>x.id!==id);if(U.editId===id){U.editId=null;U.form=false}save();render()}
+function snow(d){U.playing=false;U.snowYr=Math.max(0,Math.min(30,U.snowYr+d));render()}
+function playSnow(){
+  if(U.playing){U.playing=false;render();return}
+  U.playing=true;if(U.snowYr>=30)U.snowYr=0;render();
+  const tick=()=>{if(!U.playing||U.tab!=="learn")return;U.snowYr++;if(U.snowYr>=30){U.snowYr=30;U.playing=false}render();if(U.playing)setTimeout(tick,600)};
+  setTimeout(tick,600);
+}
 function openSettings(focus){U.settings=true;U.settingsFocus=focus||null;render()}
 function closeSettings(){if(!D.kids.length){alert("Add at least one kid first.");return}U.settings=false;U.kid=Math.min(U.kid,D.kids.length-1);render()}
 function setRate(r){if(!(r>=0&&r<=.5)){alert("Pick a rate between 0% and 50%.");return}D.rate=r;U.mkStart=null;save();render()}
 function setMile(i,val){const n=parseInt(val);const miles=D.miles.slice();if(n>0)miles[i]=n;else miles.splice(i,1);D.miles=[...new Set(miles.filter(x=>x>0))].sort((a,b)=>a-b);if(!D.miles.includes(D.goal))D.goal=D.miles[D.miles.length-1]||30;save();render()}
-function addKid(){const name=prompt("Kid's name?");if(!name||!name.trim())return;const age=parseInt(prompt("How old?","6"));D.kids.push({id:uid("k"),name:name.trim(),born:bornFromAge(isNaN(age)?6:age),txns:[]});save();render()}
+function addKid(){const name=((document.getElementById("nkName")||{}).value||"").trim();if(!name){alert("Type the new kid's name first.");return}const age=parseInt((document.getElementById("nkAge")||{}).value);D.kids.push({id:uid("k"),name,born:bornFromAge(isNaN(age)?6:age),txns:[]});save();render()}
 function removeKid(i){const k=D.kids[i];if(!confirm(`Remove ${k.name} and all of their history? Export a backup first if you're not sure.`))return;D.kids.splice(i,1);if(U.kid>=D.kids.length)U.kid=Math.max(0,D.kids.length-1);save();render()}
 function copyLink(btn){const url=location.href.split("#")[0].split("?")[0];(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>{btn.textContent="Copied";setTimeout(()=>btn.textContent="Copy",1500)}).catch(()=>{const i=btn.previousElementSibling;i.select();document.execCommand("copy");btn.textContent="Copied";setTimeout(()=>btn.textContent="Copy",1500)})}
 
@@ -794,6 +868,7 @@ function loadDemo(){D=demoData();U.kid=0;U.tab="grow";save();render()}
 //  INIT
 // ═══════════════════════════════════════════════════════════
 load();
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 {const h=location.hash.slice(1).split(",").filter(Boolean);
  if(h.includes("demo")&&!D){D=demoData();save()}
  if(D){if(h.includes("history"))U.tab="history";else if(h.includes("learn"))U.tab="learn";if(h.includes("spend")){U.spend=true}if(h.includes("market")){U.market=true}}}
