@@ -464,7 +464,9 @@ function render(){
     <div class="foot">${esc(D.family||"Family")} Bank · ${fmtPct(D.rate)} a year · Data lives only in this browser — <a href="#" onclick="exportData();return false">export a backup</a></div>
   </div>
   ${U.settings?renderSettings():""}`;
-  requestAnimationFrame(()=>{if(v)afterRender(v)});
+  // setTimeout, not requestAnimationFrame: rAF is paused in background tabs, so charts
+  // would stay blank for anyone who opens the link in a tab they haven't switched to yet.
+  setTimeout(()=>{if(v)afterRender(v)},0);
 }
 
 function renderHeader(v){
