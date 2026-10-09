@@ -1,19 +1,21 @@
 # Family Bank
 
+**Live:** <https://wt101202.github.io/family-bank/> · sample data: <https://wt101202.github.io/family-bank/#demo>
+
 A bank for your kids that pays interest, shows them the snowball, and tells them what every purchase really costs.
 
 One file. No server, no accounts, no dependencies. Each family's data lives in their own browser.
 
 ---
 
-## Put it on GitHub Pages (about 2 minutes)
+## How it was put on GitHub Pages (for reference, or to redo it)
 
 1. Go to <https://github.com/new>. Repository name: `family-bank`. Public. Click **Create repository**.
 2. On the empty-repo page click **uploading an existing file**, drag `index.html` from this folder onto the page, click **Commit changes**.
 3. In the repo: **Settings → Pages** (left sidebar).
 4. Under *Build and deployment*: Source = **Deploy from a branch**; Branch = **main**, folder **/ (root)**. Click **Save**.
 5. Wait about a minute, refresh the Pages settings page. Your link is shown at the top:
-   `https://<your-username>.github.io/family-bank/`
+   `https://wt101202.github.io/family-bank/`
 
 That link is the whole product. Bookmark it on your phone.
 
@@ -25,7 +27,7 @@ Alternative (if you'd rather use a terminal):
 cd "<this folder>"
 git init && git add index.html README.md BRIEF.md && git commit -m "Family Bank v3"
 gh repo create family-bank --public --source=. --push
-gh api -X POST repos/<your-username>/family-bank/pages -f build_type=legacy -f source[branch]=main -f source[path]=/
+gh api -X POST repos/wt101202/family-bank/pages -f build_type=legacy -f source[branch]=main -f source[path]=/
 ```
 
 ---
@@ -36,7 +38,7 @@ Send them the link. They get the setup screen, enter their family name and kids,
 
 Inside the app, **⚙ Settings → Share** has a copy button for the link.
 
-`https://<your-username>.github.io/family-bank/#demo` opens it pre-loaded with sample data (two kids, a year of history) so someone can see it working before setting up their own. The setup screen has the same thing as a button.
+`https://wt101202.github.io/family-bank/#demo` opens it pre-loaded with sample data (two kids, a year of history) so someone can see it working before setting up their own. The setup screen has the same thing as a button.
 
 ---
 
