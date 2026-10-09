@@ -179,6 +179,21 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
 .mv-sum{margin-top:12px;background:var(--g50);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.6;color:var(--n700)}
 .mv-sum b{color:var(--n900)}
 .mv-err{margin-top:10px;font-size:13px;color:var(--r600);font-weight:700}
+.hero .month{margin-top:8px;display:inline-block;background:var(--g50);color:var(--g800);border-radius:100px;padding:5px 12px;font-size:12px;line-height:1.4}
+.hero .month b{color:var(--g700)}
+.lens{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.lens .t{font-size:11px;font-weight:700;color:var(--n400);text-transform:uppercase;letter-spacing:.5px;margin-right:2px}
+.chip{padding:6px 12px;border-radius:100px;font-size:12px;font-weight:700;background:var(--n100);color:var(--n600)}
+.chip.on{background:var(--g600);color:white}
+.chip.bank.on{background:var(--g800)}
+.rk{padding:10px 0;border-bottom:1px solid var(--n100)}
+.rk .nm{display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--n900)}
+.rk .tl{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.rk .tl span{font-size:12px;background:var(--n50);border:1px solid var(--n100);border-radius:100px;padding:3px 10px;color:var(--n600)}
+.rk .tl button{color:var(--r500);font-weight:800;margin-left:4px}
+.rateform{margin-top:12px;background:var(--n50);border:1px solid var(--n100);border-radius:14px;padding:14px}
+.rateform .grid3{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rateform .grid3 .full{grid-column:1/-1}
 .cheer{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--g800);color:white;border-radius:16px;padding:14px 20px;font-size:15px;line-height:1.4;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.25);opacity:0;transition:all .35s;z-index:1200;max-width:92vw}
 .cheer.on{opacity:1;transform:translate(-50%,0)}
 .cheer b{color:var(--g300);font-size:18px}
@@ -295,18 +310,37 @@ const bornFromAge=age=>{const d=new Date();const y=d.getFullYear()-Math.floor(ag
 
 const sortTx=txns=>[...txns].sort((a,b)=>a.date.localeCompare(b.date)||(a.seq||0)-(b.seq||0));
 
-// Simulate the ledger with continuous compounding at `rate` between events.
+// ── Rate schedules: [{from:"YYYY-MM-DD", rate}] sorted by from. A plain number still works. ──
+const START="1900-01-01";
+function rateAt(s,iso){if(typeof s==="number")return s;let r=s[0].rate;for(const e of s){if(e.from<=iso)r=e.rate;else break}return r}
+// grow v from date a to date b, switching rate at each change in between
+function growSched(v,s,a,b){
+  if(typeof s==="number")return grow(v,s,yearsBetween(a,b));
+  let cur=a;for(const e of s){if(e.from<=cur)continue;if(e.from>=b)break;v=grow(v,rateAt(s,cur),yearsBetween(cur,e.from));cur=e.from}
+  return grow(v,rateAt(s,cur),yearsBetween(cur,b));
+}
+// add/replace a rate change; same start date replaces
+function withRate(s,from,rate){const out=s.filter(e=>e.from!==from).concat([{from,rate}]).sort((x,y)=>x.from.localeCompare(y.from));out[0].from=START;return out}
+// fill in fields older saves don't have
+function norm(d){
+  if(!d)return d;if(!(d.rate>=0))d.rate=.10;
+  if(!Array.isArray(d.whatIf))d.whatIf=[4,7,10];
+  (d.kids||[]).forEach(k=>{if(!Array.isArray(k.rates)||!k.rates.length)k.rates=[{from:START,rate:d.rate}]});
+  return d;
+}
+
+// Simulate the ledger with continuous compounding at `rate` (number or schedule) between events.
 // opts.noSpend -> ignore withdrawals (ghost / "if you'd never spent")
 function simulate(txns,rate,asOf,opts={}){
   let bal=0,prev=null,put=0,spent=0;
   for(const t of sortTx(txns)){
     if(t.date>asOf)break;
-    if(prev)bal=grow(bal,rate,yearsBetween(prev,t.date));
+    if(prev)bal=growSched(bal,rate,prev,t.date);
     if(t.type==="earn"){bal+=t.amt;put+=t.amt}
     else if(!opts.noSpend){bal-=t.amt;spent+=t.amt}
     prev=t.date;
   }
-  if(prev)bal=grow(bal,rate,yearsBetween(prev,asOf));
+  if(prev)bal=growSched(bal,rate,prev,asOf);
   return {balance:bal,put,spent,growth:bal-(put-spent)};
 }
 
@@ -355,7 +389,7 @@ function snowball(P,rate,years){const out=[];for(let n=0;n<=years;n++){const v=P
 // ── Migration from v2 (Netlify-era) exports ──
 function migrate(d){
   if(!d)return null;
-  if(d.v===3)return d;
+  if(d.v===3)return norm(d);
   const kids=(d.kids||[]).map((k,i)=>({
     id:"k"+(i+1)+"_"+Math.random().toString(36).slice(2,6),
     name:k.name||"Kid",
@@ -366,7 +400,7 @@ function migrate(d){
       type:(t.type==="withdrawal"||t.type==="spend")?"spend":"earn",seq:j
     }))
   }));
-  return {v:3,family:d.familyName||d.family||"",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids};
+  return norm({v:3,family:d.familyName||d.family||"",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids});
 }
 // Round a chart max up to a clean 4-step axis (e.g. 4,394 -> 6,000 with steps of 1,500)
 function niceMax(v){if(!(v>0))return 4;const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw)));const step=[1,1.5,2,2.5,3,4,5,6,8,10].map(m=>m*p).find(s=>s>=raw);return step*4}
@@ -377,6 +411,7 @@ function niceMax(v){if(!(v>0))return 4;const raw=v/4,p=Math.pow(10,Math.floor(Ma
 // ═══════════════════════════════════════════════════════════
 const fmt=v=>(v<0?"-":"")+"$"+Math.round(Math.abs(v)).toLocaleString();
 const fmtK=v=>v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v>=1e4?"$"+Math.round(v/1e3)+"k":v>=1e3?"$"+(v/1e3).toFixed(1)+"k":"$"+Math.round(v);
+const fmtC=v=>Math.abs(v)<100?"$"+v.toFixed(2):fmt(v);
 const fmtAxis=v=>v>=1e6?"$"+(Math.round(v/1e5)/10)+"M":"$"+Math.round(v).toLocaleString();
 const pct1=r=>Math.round(r*1000)/10;                 // 0.07 → 7 (no float noise)
 const fmtPct=r=>{const p=pct1(r);return (p%1?p.toFixed(1):p.toFixed(0))+"%"};
@@ -394,7 +429,7 @@ const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 //  STATE
 // ═══════════════════════════════════════════════════════════
 let D=null;           // persisted data
-const U0=()=>({kid:0,tab:"grow",spend:false,spendAmt:40,market:false,mkStart:null,form:false,ftype:"earn",editId:null,snowYr:1,playing:false,settings:false,learnStart:null});
+const U0=()=>({lens:null,rateForm:false,kid:0,tab:"grow",spend:false,spendAmt:40,market:false,mkStart:null,form:false,ftype:"earn",editId:null,snowYr:1,playing:false,settings:false,learnStart:null});
 let U=U0();
 
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(D))}catch(e){}}
@@ -484,9 +519,9 @@ function renderMove(){
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closeMove()">Cancel</button><button class="btn btn-primary" onclick="pasteLoad()">Continue</button></div></div></div>`;
   if(M.mode==="error")return `<div class="modal-bg mv"><div class="modal"><h2>That link didn't open</h2><div class="mv-err">${esc(M.err)}</div><div class="modal-foot"><button class="btn btn-primary" onclick="closeMove()">OK</button></div></div></div>`;
   const d=M.data,n=d.kids.reduce((a,k)=>a+k.txns.length,0),last=d.kids.flatMap(k=>k.txns.map(t=>t.date)).sort().pop();
-  const bal=d.kids.map(k=>`${esc(k.name)} ${fmt(Math.max(0,simulate(k.txns,d.rate,todayISO()).balance))}`).join(" &middot; ");
+  const bal=d.kids.map(k=>`${esc(k.name)} ${fmt(Math.max(0,simulate(k.txns,k.rates||d.rate,todayISO()).balance))}`).join(" &middot; ");
   return `<div class="modal-bg mv"><div class="modal"><h2>Load the ${esc(d.family||"Our")} Family Bank?</h2>
-    <div class="mv-sum"><b>${bal}</b><br>${n} entr${n===1?"y":"ies"}${last?`, latest ${fmtDay(last)}/${fmtYr(last)}`:""} &middot; ${fmtPct(d.rate)} a year</div>
+    <div class="mv-sum"><b>${bal}</b><br>${n} entr${n===1?"y":"ies"}${last?`, latest ${fmtDay(last)}/${fmtYr(last)}`:""} &middot; ${d.kids.map(k=>fmtPct(rateAt(k.rates||d.rate,todayISO()))).filter((x,i,a)=>a.indexOf(x)===i).join(" / ")} a year</div>
     ${D?`<div class="mv-err" style="font-weight:600">This replaces the ${esc(D.family||"Our")} bank on this device (${D.kids.map(k=>esc(k.name)).join(", ")}). Export a backup first if you're not sure.</div>`:""}
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closeMove()">Cancel</button><button class="btn btn-primary" onclick="acceptMove()">Load it</button></div></div></div>`;
 }
@@ -575,14 +610,16 @@ function drawSnow(canvas,rows,upto,rate){
 //  DERIVED VIEW DATA
 // ═══════════════════════════════════════════════════════════
 function view(){
-  const k=kid(),age=ageNow(k.born),rate=D.rate,today=todayISO();
-  const sim=simulate(k.txns,rate,today),ghost=simulate(k.txns,rate,today,{noSpend:true});
+  const k=kid(),age=ageNow(k.born),today=todayISO(),rate=rateAt(k.rates,today);
+  const sim=simulate(k.txns,k.rates,today),ghost=simulate(k.txns,k.rates,today,{noSpend:true});
+  const m0=simulate(k.txns,k.rates,today.slice(0,8)+"01"),monthInt=Math.max(0,sim.growth-m0.growth);
+  const prate=U.lens!=null?U.lens:rate;
   const bal=Math.max(0,sim.balance);
   const miles=D.miles.filter(m=>m>age).sort((a,b)=>a-b);
   const goal=miles.includes(D.goal)?D.goal:(miles.find(m=>m>=D.goal)||miles[miles.length-1]||Math.ceil(age)+10);
   const H=Math.min(80,Math.max(Math.ceil(goal-age)+5,10));
   const horizon=Math.min(H,SP.length);
-  return {k,age,rate,today,sim,ghost,bal,miles,goal,H:horizon};
+  return {k,age,rate,prate,monthInt,today,sim,ghost,bal,miles,goal,H:horizon};
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -590,6 +627,7 @@ function view(){
 // ═══════════════════════════════════════════════════════════
 function render(){
   const root=document.getElementById("root");
+  if(D)norm(D);
   if(!D){renderSetup(root);if(U.move)root.insertAdjacentHTML("beforeend",renderMove());return}
   if(!D.kids.length){U.settings=true}
   if(U.kid>=D.kids.length)U.kid=0;
@@ -604,7 +642,7 @@ function render(){
       <button class="tab ${U.tab==="learn"?"on":""}" onclick="go('learn')">Learn</button>
     </div>`:""}
     ${v?(U.tab==="grow"?renderGrow(v):U.tab==="history"?renderHistory(v):renderLearn(v)):""}
-    <div class="foot">${esc(D.family||"Family")} Bank · ${fmtPct(D.rate)} a year · Data lives only in this browser — <a href="#" onclick="exportData();return false">export a backup</a></div>
+    <div class="foot">${esc(D.family||"Family")} Bank · ${fmtPct(v?v.rate:D.rate)} a year · Data lives only in this browser — <a href="#" onclick="exportData();return false">export a backup</a></div>
   </div>
   ${U.settings&&!U.move?renderSettings():""}${renderMove()}`;
   // setTimeout, not requestAnimationFrame: rAF is paused in background tabs, so charts
@@ -621,8 +659,9 @@ function renderHero(v){
   const atGoal=grow(v.bal,v.rate,v.goal-v.age);
   return `<div class="card hero"><div class="who">${esc(v.k.name)}'s money &middot; age ${Math.floor(v.age)}</div><div class="big">${fmt(v.bal)}</div>
   <div class="split">Earned ${fmt(v.sim.put)}${v.sim.spent>0?` &middot; Spent ${fmt(v.sim.spent)}`:""} &middot; Grew <b>+${fmt(Math.max(0,v.sim.growth))}</b></div>
+  ${v.bal>0?`<div class="month">&#127793; <b>+${fmtC(v.monthInt)}</b> interest so far this month &middot; about +${fmtC(v.bal*(Math.pow(1+v.rate,1/12)-1))} a month at ${fmtPct(v.rate)}</div>`:""}
   <div class="stats"><div class="stat"><div class="k">At age ${v.goal}</div><div class="v" style="color:var(--g600)">${fmt(atGoal)}</div></div>
-  <div class="stat"><div class="k">Growth rate</div><div class="v" style="color:var(--n700)">${fmtPct(v.rate)}/yr</div></div>
+  <div class="stat"><div class="k">Bank pays</div><div class="v" style="color:var(--n700)">${fmtPct(v.rate)}/yr</div></div>
   <div class="stat"><div class="k">Spending has cost</div><div class="v" style="color:${v.sim.spent>0?"var(--r600)":"var(--n300)"}">${v.sim.spent>0?"-"+fmt(v.ghost.balance-v.sim.balance):"—"}</div></div></div>
   <div class="quick"><button class="btn btn-primary" onclick="quickAdd('earn')">+ Earned money</button><button class="btn btn-ghost" style="color:var(--r600)" onclick="quickAdd('spend')">&minus; Spent money</button></div></div>`;
 }
@@ -631,16 +670,17 @@ function renderHero(v){
 function renderGrow(v){
   const spendMax=Math.max(50,Math.ceil(v.bal/5)*5);
   if(U.spendAmt>spendMax)U.spendAmt=spendMax;
-  const erasedGoal=U.spend?erasedAt(U.spendAmt,v.rate,v.age,v.goal):0;
+  const erasedGoal=U.spend?erasedAt(U.spendAmt,v.prate,v.age,v.goal):0;
   const mult=U.spendAmt>0?(erasedGoal/U.spendAmt):0;
   let mk=null;if(U.market){if(U.mkStart==null||U.mkStart>maxStartIdx(v.H))U.mkStart=randomStartIdx(v.H);mk=marketPath(v.bal,v.age,v.H,U.mkStart)}
-  const smoothEnd=grow(v.bal,v.rate,v.H);
+  const smoothEnd=grow(v.bal,v.prate,v.H);
   return `
   <div class="card"><div class="row"><div><h2>${U.spend?"What spending erases":U.market?"The real stock market":"If you leave it alone"}</h2>
-    <div class="sub">${U.spend?"Green is what you keep. Red is what's gone.":U.market?`What actually happened starting in ${mk.startYear}`:`${fmtPct(v.rate)} a year, every year`}</div></div>
+    <div class="sub">${U.spend?"Green is what you keep. Red is what's gone.":U.market?`What actually happened starting in ${mk.startYear}`:U.lens!=null?`Pretend it grew ${fmtPct(v.prate)} a year (the bank pays ${fmtPct(v.rate)})`:`${fmtPct(v.prate)} a year, every year`}</div></div>
     <div class="seg"><button class="${!U.market?"on":""}" onclick="setMarket(false)">Smooth</button><button class="${U.market?"on":""}" onclick="setMarket(true)">Real market</button></div></div>
+    ${!U.market?`<div class="lens"><span class="t">What if</span><button class="chip bank ${U.lens==null?"on":""}" onclick="setLens(null)">Bank ${fmtPct(v.rate)}</button>${D.whatIf.filter(x=>x>0&&Math.abs(x/100-v.rate)>1e-9).map(x=>`<button class="chip ${U.lens!=null&&Math.abs(U.lens-x/100)<1e-9?"on":""}" onclick="setLens(${x/100})">${fmtPct(x/100)}</button>`).join("")}</div>`:""}
     <div class="chart"><canvas id="cGrow"></canvas><div class="tip" id="tGrow"></div></div>
-    ${U.market?`<div class="legend"><span><i style="background:#2563EB"></i>Real market from ${mk.startYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
+    ${U.market?`<div class="legend"><span><i style="background:#2563EB"></i>Real market from ${mk.startYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.prate)}</span></div>
       <div class="caption">If ${esc(v.k.name)} had started in <b>${mk.startYear}</b>: worst year was <span class="bad">${mk.worst.year} (${mk.worst.ret.toFixed(0)}%)</span>. It still ended at <b>${fmt(mk.end)}</b> vs ${fmt(smoothEnd)} on the smooth line. Some stretches do better, some worse — that's why we say "about ${fmtPct(SP_CAGR)}."</div>
       <div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="shuffle()">&#x21bb; Try a different start year</button></div>`:""}
     ${!U.spend&&!U.market?`<div class="watch"><button class="btn btn-soft btn-sm" onclick="watchGrow()">&#9654; Watch it grow</button></div>`:""}
@@ -657,7 +697,7 @@ function renderGrow(v){
   </div>
 
   <div class="card"><h2>${esc(v.k.name)}'s money at every age</h2><div class="sub">${U.spend?"Red is what this purchase erases":"If nothing is spent"}</div>
-    <div class="miles">${v.miles.map(m=>{const val=grow(v.bal,v.rate,m-v.age),er=U.spend?erasedAt(U.spendAmt,v.rate,v.age,m):0;
+    <div class="miles">${v.miles.map(m=>{const val=grow(v.bal,v.prate,m-v.age),er=U.spend?erasedAt(U.spendAmt,v.prate,v.age,m):0;
       return `<div class="mile ${m===v.goal?"goal":""}">${m===v.goal?'<div class="tag">Goal</div>':""}<div class="a">Age ${m}</div><div class="v" data-m="${m}">${fmt(val)}</div>${U.spend?`<div class="e" data-e="${m}">-${fmt(er)}</div>`:""}</div>`}).join("")}</div>
   </div>
 
@@ -698,7 +738,7 @@ function renderForm(v){
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">${e?`<button class="btn btn-ghost" style="color:var(--r600);margin-right:auto" onclick="delTx('${e.id}')">Remove</button>`:""}<button class="btn btn-ghost" onclick="toggleForm()">Cancel</button><button class="btn ${isSpend?"btn-danger":"btn-primary"}" id="fGo" onclick="addTx()">${e?"Save":isSpend?"Spend it":"Add it"}</button></div>
   </div>`;
 }
-function availBal(v){return U.editId?Math.max(0,simulate(v.k.txns.filter(t=>t.id!==U.editId),v.rate,v.today).balance):v.bal}
+function availBal(v){return U.editId?Math.max(0,simulate(v.k.txns.filter(t=>t.id!==U.editId),v.k.rates,v.today).balance):v.bal}
 function liveReceipt(){
   const v=view(),box=document.getElementById("receipt");if(!box)return;
   const amt=parseFloat(document.getElementById("fAmt").value)||0,date=document.getElementById("fDate").value||todayISO();
@@ -750,9 +790,17 @@ function renderSettings(){
     <div class="row"><h2>Settings</h2><button class="btn btn-ghost btn-sm" onclick="closeSettings()">Done</button></div>
     <div class="field"><label>Family name</label><input class="inp" id="sFamily" value="${esc(D.family)}" onchange="D.family=this.value.trim();save()"></div>
 
-    <div class="sect"><h3>Growth rate</h3><div class="hint">What the family bank pays, per year. The stock market has averaged about ${fmtPct(SP_CAGR)} for 100 years.</div>
-      <div class="presets">${PRESETS.map(p=>`<button class="preset ${Math.abs(p.r-D.rate)<1e-9?"on":""}" onclick="setRate(${p.r})">${p.l}</button>`).join("")}<button class="preset ${isPreset?"":"on"}" onclick="document.getElementById('sRate').focus()">Custom</button></div>
-      <div class="rate-row"><input class="inp" id="sRate" type="number" inputmode="decimal" step="0.5" min="0" max="50" value="${pct1(D.rate)}" onchange="setRate(parseFloat(this.value)/100)"><span style="font-size:14px;color:var(--n500)">% per year</span></div></div>
+    <div class="sect"><h3>Bank rate</h3><div class="hint">What each account really earns, every day, automatically. A change starts on the date you pick &mdash; growth already earned stays put.</div>
+      ${D.kids.map((k,i)=>`<div class="rk"><div class="nm"><span>${esc(k.name)}</span><span style="color:var(--g600)">${fmtPct(rateAt(k.rates,todayISO()))} now</span></div>
+        <div class="tl">${k.rates.map((e,j)=>`<span>${fmtPct(e.rate)} ${e.from===START?"from the start":"from "+fmtDay(e.from)+"/"+fmtYr(e.from)}${j?`<button onclick="removeRate(${i},'${e.from}')" title="Remove this change">&times;</button>`:""}</span>`).join("")}</div></div>`).join("")}
+      ${U.rateForm?`<div class="rateform"><div class="grid3"><div><div class="lbl">New rate (%)</div><input class="inp" id="rfRate" type="number" inputmode="decimal" step="0.5" min="0" max="50" value="${pct1(D.rate)}"></div>
+        <div><div class="lbl">For</div><select class="inp" id="rfWho"><option value="all">Everyone</option>${D.kids.map((k,i)=>`<option value="${i}">${esc(k.name)}</option>`).join("")}</select></div><div class="full"><div class="lbl">Starting on</div><input class="inp" id="rfFrom" type="date" value="${todayISO()}"></div></div>
+        <div class="presets">${[...new Set([...D.whatIf.filter(x=>x>0),4,7,10])].sort((a,b)=>a-b).map(x=>`<button class="preset" onclick="document.getElementById('rfRate').value=${x}">${x}%</button>`).join("")}</div>
+        <div class="actions" style="justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="U.rateForm=false;render()">Cancel</button><button class="btn btn-primary btn-sm" onclick="saveRate()">Save rate</button></div></div>`
+      :`<div class="actions"><button class="btn btn-soft btn-sm" onclick="U.rateForm=true;render()">Change rate</button></div>`}</div>
+
+    <div class="sect"><h3>What-if rates</h3><div class="hint">Buttons on the Grow chart for "what if it grew 7%?" They only change the picture, never the balance. Leave a box empty to hide it.</div>
+      <div class="miles-row">${[0,1,2,3,4].map(i=>`<input class="inp" type="number" inputmode="decimal" step="0.5" min="0" max="50" placeholder="%" value="${D.whatIf[i]??""}" onchange="setWhatIf(${i},this.value)">`).join("")}</div></div>
 
     <div class="sect"><h3>Kids</h3><div class="hint">Ages count up on their own from each birthday.</div>
       <div style="margin-top:10px">${D.kids.map((k,i)=>`<div class="kid-row2"><div><div class="lbl">Name</div><input class="inp" value="${esc(k.name)}" onchange="D.kids[${i}].name=this.value.trim()||'Kid';save()"></div>
@@ -813,7 +861,7 @@ function finishSetup(){
   const kids=named.map((k,i)=>{const bal=parseFloat(k.bal)||0;return {id:uid("k"),name:k.name.trim(),born:k.born,
     txns:bal>0?[{id:uid("t"),date:todayISO(),desc:"Opening deposit",amt:bal,type:"earn",seq:0}]:[]}});
   if(!kids.length){alert("Add at least one kid.");return}
-  D={v:3,family:(U.setupFamily||"").trim()||"Our",rate:U.setupRate??.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids};
+  D=norm({v:3,family:(U.setupFamily||"").trim()||"Our",rate:U.setupRate??.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids,whatIf:[4,7,10]});
   U.kid=0;U.tab="grow";save();render();
 }
 
@@ -828,8 +876,8 @@ function afterRender(v){
 }
 function drawGrow(v){
   const c=document.getElementById("cGrow"),t=document.getElementById("tGrow");if(!c)return;
-  const smooth=projectPath(v.bal,v.rate,v.age,v.H);            // integer years → hover/tooltips
-  const smoothD=projectPath(v.bal,v.rate,v.age,v.H,.25);       // dense → drawing
+  const smooth=projectPath(v.bal,v.prate,v.age,v.H);            // integer years → hover/tooltips
+  const smoothD=projectPath(v.bal,v.prate,v.age,v.H,.25);       // dense → drawing
   const xTicks=[];for(let a=Math.ceil(v.age);a<=v.age+v.H;a++)if(a%5===0||a===v.goal)xTicks.push({x:a,label:String(a)});
   let layers=[],hoverPts=smooth.map(p=>({x:p.age,y:p.v})),tip;
   if(U.market){
@@ -841,8 +889,8 @@ function drawGrow(v){
     tip=i=>{const p=mk.path[i],s=smooth[i];return `<b>Age ${Math.floor(p.age)}${i?` · ${p.year}`:""}</b><div class="l"><span>Real market</span><span style="color:#2563EB;font-weight:700">${fmt(p.v)}</span></div><div class="l"><span>Smooth</span><span>${fmt(s.v)}</span></div>${i?`<div class="l"><span>${p.year} return</span><span style="color:${SP[p.year-SP_START]<0?"#DC2626":"#059669"};font-weight:700">${SP[p.year-SP_START]>0?"+":""}${SP[p.year-SP_START].toFixed(0)}%</span></div>`:""}`};
     drawChart(c,{xLabel:"Age",xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip,marks:wi>0?[{x:mk.path[wi].age,y:mk.path[wi].v,text:`${mk.worst.year}: ${mk.worst.ret.toFixed(0)}%`,color:"#DC2626"}]:[]});
   }else if(U.spend&&U.spendAmt>0){
-    const kept=projectPath(Math.max(0,v.bal-U.spendAmt),v.rate,v.age,v.H);
-    const keptD=projectPath(Math.max(0,v.bal-U.spendAmt),v.rate,v.age,v.H,.25);
+    const kept=projectPath(Math.max(0,v.bal-U.spendAmt),v.prate,v.age,v.H);
+    const keptD=projectPath(Math.max(0,v.bal-U.spendAmt),v.prate,v.age,v.H,.25);
     layers=[{type:"area",pts:keptD.map(p=>({x:p.age,y:p.v})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]},
             {type:"band",upper:smoothD.map(p=>({x:p.age,y:p.v})),lower:keptD.map(p=>({x:p.age,y:p.v})),color:"#EF4444",grad:["rgba(239,68,68,.22)","rgba(239,68,68,.04)"]}];
     tip=i=>{const s=smooth[i],k=kept[i];return `<b>Age ${Math.floor(s.age)}</b><div class="l"><span>If you keep it</span><span style="color:#059669;font-weight:700">${fmt(s.v)}</span></div><div class="l"><span>If you spend ${fmt(U.spendAmt)}</span><span>${fmt(k.v)}</span></div><div class="l"><span style="color:#DC2626">Erased</span><span style="color:#DC2626;font-weight:700">${fmt(s.v-k.v)}</span></div>`};
@@ -860,11 +908,11 @@ function drawGrow(v){
 }
 function drawHist(v){
   const c=document.getElementById("cHist"),t=document.getElementById("tHist");if(!c)return;
-  const path=historyPath(v.k.txns,v.rate,v.today);
+  const path=historyPath(v.k.txns,v.k.rates,v.today);
   if(!path.length){const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);return}
   const xMin=path[0].t,xMax=path[path.length-1].t,span=xMax-xMin;
   const xTicks=[];const nT=Math.max(2,Math.min(6,Math.round(span/(45*DAY)),Math.floor(((c.clientWidth||600)-80)/64)));for(let i=0;i<=nT;i++){const tt=xMin+span*i/nT;xTicks.push({x:tt,label:span>400*DAY?String(new Date(tt).getFullYear()):span<90*DAY?(new Date(tt).getMonth()+1)+"/"+new Date(tt).getDate():fmtMonYr(tt)})}
-  const dots=sortTx(v.k.txns).filter(tx=>tx.date>=path[0].iso).map(tx=>{const tt=parseD(tx.date).getTime();const b=simulate(v.k.txns,v.rate,tx.date).balance;return {x:tt,y:b,color:tx.type==="earn"?"#059669":"#EF4444",tx}});
+  const dots=sortTx(v.k.txns).filter(tx=>tx.date>=path[0].iso).map(tx=>{const tt=parseD(tx.date).getTime();const b=simulate(v.k.txns,v.k.rates,tx.date).balance;return {x:tt,y:b,color:tx.type==="earn"?"#059669":"#EF4444",tx}});
   const layers=[{type:"line",pts:path.map(p=>({x:p.t,y:p.ghost})),color:"#9CA3AF",dash:[5,4],width:1.5},
                 {type:"area",pts:path.map(p=>({x:p.t,y:p.bal})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]}];
   const hoverPts=path.map(p=>({x:p.t,y:p.bal}));
@@ -903,11 +951,11 @@ function shuffle(){const v=view();let s;do{s=randomStartIdx(v.H)}while(s===U.mkS
 function learnShuffle(){const v=view();const lh=Math.min(25,v.H);let s;do{s=randomStartIdx(lh)}while(s===U.learnStart);U.learnStart=s;render()}
 function slide(val){
   U.spendAmt=Number(val);const v=view();
-  const eg=erasedAt(U.spendAmt,v.rate,v.age,v.goal),mult=U.spendAmt>0?eg/U.spendAmt:0;
+  const eg=erasedAt(U.spendAmt,v.prate,v.age,v.goal),mult=U.spendAmt>0?eg/U.spendAmt:0;
   const set=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt};
   set("spendAmt",fmt(U.spendAmt));set("eSpend",fmt(U.spendAmt));set("eGoal",fmt(eg));set("eMult",mult.toFixed(1)+"x");
   const box=document.getElementById("eraseBox");if(box)box.style.display=U.spendAmt>0?"":"none";
-  v.miles.forEach(m=>{const e=document.querySelector(`[data-e="${m}"]`);if(e)e.textContent="-"+fmt(erasedAt(U.spendAmt,v.rate,v.age,m))});
+  v.miles.forEach(m=>{const e=document.querySelector(`[data-e="${m}"]`);if(e)e.textContent="-"+fmt(erasedAt(U.spendAmt,v.prate,v.age,m))});
   drawGrow(v);
 }
 function toggleForm(){U.form=!U.form;U.ftype="earn";U.editId=null;render();if(U.form){const d=document.getElementById("fDesc");if(d)d.focus()}}
@@ -925,7 +973,7 @@ function addTx(){
   const e=U.editId&&k.txns.find(t=>t.id===U.editId);
   if(e)Object.assign(e,rec);else k.txns.push({id:uid("t"),...rec,seq:k.txns.length});
   U.form=false;U.editId=null;save();render();
-  if(!e&&rec.type==="earn"){const a=ageAt(k.born,date);const at=erasedAt(rec.amt,D.rate,a,v.goal);celebrate(`+${fmt(rec.amt)} for ${esc(k.name)}!`,at>0?`Left alone, that becomes <b>${fmt(at)}</b> by age ${v.goal}.`:"")}
+  if(!e&&rec.type==="earn"){const a=ageAt(k.born,date);const at=erasedAt(rec.amt,v.rate,a,v.goal);celebrate(`+${fmt(rec.amt)} for ${esc(k.name)}!`,at>0?`Left alone, that becomes <b>${fmt(at)}</b> by age ${v.goal}.`:"")}
 }
 function delTx(id){const k=kid();const t=k.txns.find(x=>x.id===id);if(!t)return;if(!confirm(`Remove "${t.desc||(t.type==="earn"?"Earned":"Spent")}" (${fmt(t.amt)})?`))return;k.txns=k.txns.filter(x=>x.id!==id);if(U.editId===id){U.editId=null;U.form=false}save();render()}
 function snow(d){U.playing=false;U.snowYr=Math.max(0,Math.min(30,U.snowYr+d));render()}
@@ -937,7 +985,16 @@ function playSnow(){
 }
 function openSettings(focus){U.settings=true;U.moveLink="";U.settingsFocus=focus||null;render()}
 function closeSettings(){if(!D.kids.length){alert("Add at least one kid first.");return}U.settings=false;U.kid=Math.min(U.kid,D.kids.length-1);render()}
-function setRate(r){if(!(r>=0&&r<=.5)){alert("Pick a rate between 0% and 50%.");return}D.rate=r;U.mkStart=null;save();render()}
+// change the bank rate for everyone (or one kid) starting on a date; past growth is untouched
+function applyRate(r,from,who){if(!(r>=0&&r<=.5)){alert("Pick a rate between 0% and 50%.");return false}
+  if(who==="all"){D.rate=r;D.kids.forEach(k=>k.rates=withRate(k.rates,from,r))}else{const k=D.kids[who];k.rates=withRate(k.rates,from,r)}
+  U.mkStart=null;save();render();return true}
+function setRate(r){applyRate(r,todayISO(),"all")}
+function saveRate(){const r=parseFloat((document.getElementById("rfRate")||{}).value)/100,from=(document.getElementById("rfFrom")||{}).value||todayISO(),w=(document.getElementById("rfWho")||{}).value||"all";
+  U.rateForm=false;if(!applyRate(r,from,w==="all"?"all":parseInt(w)))U.rateForm=true}
+function removeRate(i,from){const k=D.kids[i];if(k.rates.length<2)return;if(!confirm(`Remove the rate change from ${fmtDay(from)}/${fmtYr(from)} for ${k.name}? Their growth will be recalculated without it.`))return;k.rates=k.rates.filter(e=>e.from!==from);k.rates[0].from=START;save();render()}
+function setWhatIf(i,val){const n=parseFloat(val);const w=D.whatIf.slice();while(w.length<5)w.push(null);w[i]=n>0&&n<=50?n:null;D.whatIf=w.filter(x=>x!=null);save();render()}
+function setLens(r){U.lens=r;U.mkStart=null;render()}
 function setMile(i,val){const n=parseInt(val);const miles=D.miles.slice();if(n>0)miles[i]=n;else miles.splice(i,1);D.miles=[...new Set(miles.filter(x=>x>0))].sort((a,b)=>a-b);if(!D.miles.includes(D.goal))D.goal=D.miles[D.miles.length-1]||30;save();render()}
 function addKid(){const name=((document.getElementById("nkName")||{}).value||"").trim();if(!name){alert("Type the new kid's name first.");return}const born=readBorn("nk_m","nk_y");if(!born){alert(`Pick ${name}'s birthday month and year.`);return}D.kids.push({id:uid("k"),name,born,txns:[]});save();render()}
 function setBorn(i){const b=readBorn("kb_m"+i,"kb_y"+i);if(b){D.kids[i].born=b;save();render()}}
@@ -954,7 +1011,7 @@ function demoData(){
   return {v:3,family:"Doe",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,
     earn:"A on a report card — $25\nB — $10\nDid something without being asked — $15\nDid the right thing when it was hard — $10",
     kids:[
-      {id:uid("k"),name:"Jane",born:bornFromAge(6.5),txns:[
+      {id:uid("k"),name:"Jane",born:bornFromAge(6.5),rates:[{from:START,rate:.07},{from:clampD(d(4,1)),rate:.10}],txns:[
         T(d(10,15,1),"Opening deposit",100,"earn",0),T(d(12,20,1),"Report card — 3 A's",75,"earn",1),T(d(2,3),"Cleaned the garage without being asked",15,"earn",2),
         T(d(3,14),"Lego set",40,"spend",3),T(d(5,22),"Report card — 4 A's",100,"earn",4),T(d(7,4),"Water balloons",12,"spend",5),
         T(d(8,30),"Told the truth about the window",10,"earn",6),T(d(10,2),"Report card — 3 A's",75,"earn",7)]},
