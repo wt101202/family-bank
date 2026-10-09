@@ -201,6 +201,9 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
   .modal{padding:22px 18px}
   .tab{font-size:13px;padding:10px 6px}
   .chart{height:240px}
+  .bigstat{gap:6px}
+  .bigstat div{min-width:0;padding:12px 6px}
+  .bigstat .v{font-size:18px}
 }
 </style>
 </head>
@@ -590,7 +593,7 @@ function renderLearn(v){
   <div class="card learn"><div class="row"><div><h2>Why it's bumpy</h2><div class="sub">The same ${fmt(P)}, smooth vs. what really happened</div></div><button class="btn btn-ghost btn-sm" onclick="learnShuffle()">&#x21bb; Different years</button></div>
     <div class="chart" style="height:220px"><canvas id="cBump"></canvas><div class="tip" id="tBump"></div></div>
     <div class="legend"><span><i style="background:#2563EB"></i>Real market ${mk.startYear}–${mk.endYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
-    <div class="bigstat"><div><div class="k">Years the market<br>went down</div><div class="v red">${SP_NEG} of ${SP.length}</div></div><div><div class="k">Worst single year<br>(${SP_START+SP.indexOf(Math.min(...SP))})</div><div class="v red">${Math.min(...SP).toFixed(0)}%</div></div><div><div class="k">Average, all<br>100 years</div><div class="v green">+${fmtPct(SP_CAGR)}</div></div></div>
+    <div class="bigstat"><div><div class="k">Years the market<br>went down</div><div class="v red" style="white-space:nowrap">${SP_NEG} of ${SP.length}</div></div><div><div class="k">Worst single year<br>(${SP_START+SP.indexOf(Math.min(...SP))})</div><div class="v red">${Math.min(...SP).toFixed(0)}%</div></div><div><div class="k">Average, all<br>100 years</div><div class="v green">+${fmtPct(SP_CAGR)}</div></div></div>
     <p>Some years it drops — about <b>1 in every 4</b>. People who get scared and pull their money out lock in the loss. People who <b>leave it alone</b> ride it back up. Every single 20-year stretch in the last century ended higher than it started.</p>
   </div>`;
 }
