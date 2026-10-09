@@ -48,7 +48,7 @@ input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appear
 .inp{width:100%;padding:12px 14px;border:1.5px solid var(--n200);border-radius:12px;outline:none;background:white;color:var(--n900);transition:border .15s}
 .inp:focus{border-color:var(--g500)}
 textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
-.kid-row{display:grid;grid-template-columns:1.6fr .8fr 1fr 34px;gap:8px;align-items:end;margin-bottom:8px}
+.kid-row{display:grid;grid-template-columns:1.1fr 1.5fr .8fr 34px;gap:8px;align-items:end;margin-bottom:8px}
 .kid-row .lbl{font-size:10px;margin-bottom:4px}
 .kid-row .inp{padding:10px 12px}
 .icon-btn{width:34px;height:42px;border-radius:10px;background:var(--r50);color:var(--r500);font-size:18px;display:flex;align-items:center;justify-content:center}
@@ -164,10 +164,12 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
 .nudge .acts{display:flex;gap:6px;flex-shrink:0}
 .nudge.ios{background:#EFF6FF;border-color:#BFDBFE}
 .setup .ios-tip{margin-top:16px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--n700);line-height:1.5}
-.kid-row2{display:grid;grid-template-columns:1.3fr 1fr 34px;gap:8px;align-items:end;margin-bottom:8px}
+.kid-row2{display:grid;grid-template-columns:1fr 1.25fr 34px;gap:8px;align-items:end;margin-bottom:8px}
+.born{display:grid;grid-template-columns:1fr 1.15fr;gap:6px}
+.born .inp{padding:10px 6px;-webkit-appearance:none;appearance:none;background:white;text-align:center;text-align-last:center}
 .kid-row2 .lbl{font-size:10px;margin-bottom:4px}
 .kid-row2 .inp{padding:10px 12px}
-.newkid{display:grid;grid-template-columns:1.3fr .6fr auto;gap:8px;align-items:end;margin-top:6px}
+.newkid{display:grid;grid-template-columns:1fr 1.25fr auto;gap:8px;align-items:end;margin-top:6px}
 .newkid .inp{padding:10px 12px}
 .modal-bg.mv{z-index:1100}
 .movebox{margin-top:10px;display:flex;flex-direction:column;gap:8px}
@@ -177,6 +179,10 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
 .mv-sum{margin-top:12px;background:var(--g50);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.6;color:var(--n700)}
 .mv-sum b{color:var(--n900)}
 .mv-err{margin-top:10px;font-size:13px;color:var(--r600);font-weight:700}
+.cheer{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--g800);color:white;border-radius:16px;padding:14px 20px;font-size:15px;line-height:1.4;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.25);opacity:0;transition:all .35s;z-index:1200;max-width:92vw}
+.cheer.on{opacity:1;transform:translate(-50%,0)}
+.cheer b{color:var(--g300);font-size:18px}
+.watch{display:flex;justify-content:center;margin-top:10px}
 .form h4{font-size:13px;font-weight:800;color:var(--n900);margin-bottom:10px}
 .empty-state{text-align:center;padding:36px 10px;color:var(--n400);font-size:14px;line-height:1.5}
 .form{background:var(--n50);border-radius:16px;padding:18px;margin-top:14px;border:1px solid var(--n100)}
@@ -237,7 +243,9 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
   .stat .v{font-size:16px}
   .miles{grid-template-columns:repeat(3,1fr)}
   .miles-row{grid-template-columns:repeat(3,1fr)}
-  .kid-row{grid-template-columns:1.4fr .7fr .9fr 34px;gap:6px}
+  .kid-row{grid-template-columns:1fr 1.55fr .75fr 26px;gap:5px}
+  .kid-row .icon-btn{width:26px}
+  .born .inp{font-size:14px;padding:10px 2px}
   .setup{padding:30px 20px}
   .modal{padding:22px 18px}
   .tab{font-size:13px;padding:10px 6px}
@@ -308,7 +316,7 @@ function historyPath(txns,rate,asOf,points=160){
   if(!s.length)return [];
   let from=parseD(s[0].date).getTime();
   const to=parseD(asOf).getTime();
-  if(to-from<60*DAY)from=to-60*DAY;
+  if(to-from<7*DAY)from=to-7*DAY;   // start at the first entry; a brand-new bank shows its first week, not months of $0
   const out=[];
   for(let i=0;i<=points;i++){
     const t=from+(to-from)*i/points;
@@ -376,6 +384,10 @@ const fmtDay=iso=>{const d=parseD(iso);return (d.getMonth()+1)+"/"+d.getDate()};
 const fmtYr=iso=>parseD(iso).getFullYear();
 const fmtMonYr=t=>{const d=new Date(t);return d.toLocaleString("en-US",{month:"short"})+" '"+String(d.getFullYear()).slice(2)};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function bornSelects(mid,yid,born,onch){const [by,bm]=(born||"").split("-");const Y=new Date().getFullYear();
+  return `<div class="born"><select class="inp" id="${mid}" ${onch?`onchange="${onch}"`:""}><option value="">Month</option>${MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${bm===String(i+1).padStart(2,"0")?"selected":""}>${m}</option>`).join("")}</select><select class="inp" id="${yid}" ${onch?`onchange="${onch}"`:""}><option value="">Year</option>${Array.from({length:26},(_,i)=>Y-i).map(y=>`<option ${String(y)===by?"selected":""}>${y}</option>`).join("")}</select></div>`}
+function readBorn(mid,yid){const m=(document.getElementById(mid)||{}).value||"",y=(document.getElementById(yid)||{}).value||"";if(!m||!y)return "";const b=`${y}-${m}`;return b>todayISO().slice(0,7)?todayISO().slice(0,7):b}
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 // ═══════════════════════════════════════════════════════════
@@ -419,9 +431,20 @@ function renderNudges(){
     out+=`<div class="nudge backup"><div>&#128190; <b>Back up your bank.</b> It lives only on this phone. Last backup: ${ago}.</div><div class="acts"><button class="btn btn-primary btn-sm" onclick="exportData()">Back up</button><button class="btn btn-ghost btn-sm" onclick="D.snooze=todayISO();save();render()">Later</button></div></div>`;
   }
   if(isIOS()&&!isStandalone()&&!D.a2hsDone){
-    out+=`<div class="nudge ios"><div>&#128241; <b>On iPhone, keep it on your Home Screen.</b> Safari can clear websites you don't open for a week. In &#9881; Settings tap <b>Create link</b> and <b>Copy</b>. Then Share &rarr; <b>Add to Home Screen</b>, open it from there, tap <b>I have a move link</b> and paste.</div><div class="acts"><button class="btn btn-ghost btn-sm" onclick="D.a2hsDone=true;save();render()">Got it</button></div></div>`;
+    out+=`<div class="nudge ios"><div>&#128241; <b>On iPhone, keep it on your Home Screen.</b> Safari can clear websites you don't open for a week. In &#9881; Settings tap <b>Send this bank</b> and <b>Copy</b>. Then Share &rarr; <b>Add to Home Screen</b>, open it from there, tap <b>Load from another device</b> and paste.</div><div class="acts"><button class="btn btn-ghost btn-sm" onclick="D.a2hsDone=true;save();render()">Got it</button></div></div>`;
   }
   return out;
+}
+
+function celebrate(title,line){
+  if(!document.body||typeof document.createElement("canvas").getContext!=="function")return;
+  const c=document.createElement("canvas"),W=innerWidth,H=innerHeight,dpr=devicePixelRatio||1;c.width=W*dpr;c.height=H*dpr;
+  c.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1150";document.body.appendChild(c);
+  const x=c.getContext("2d");x.scale(dpr,dpr);const cols=["#10B981","#34D399","#FBBF24","#60A5FA","#F472B6","#A7F3D0"];
+  const P=Array.from({length:110},()=>({x:W/2+(Math.random()-.5)*60,y:H*.55,vx:(Math.random()-.5)*12,vy:-Math.random()*14-6,r:Math.random()*6+4,c:cols[Math.random()*cols.length|0],a:Math.random()*6,s:(Math.random()-.5)*.3}));
+  const t0=performance.now();const tick=now=>{const t=now-t0;x.clearRect(0,0,W,H);P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.a+=p.s;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.globalAlpha=Math.max(0,1-t/1800);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});if(t<1800)requestAnimationFrame(tick);else c.remove()};requestAnimationFrame(tick);
+  const d=document.createElement("div");d.className="cheer";d.innerHTML=`<div style="font-weight:800">${title}</div>${line?`<div>${line}</div>`:""}`;document.body.appendChild(d);
+  setTimeout(()=>d.classList.add("on"),20);setTimeout(()=>{d.classList.remove("on");setTimeout(()=>d.remove(),400)},3600);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -454,8 +477,8 @@ function closeMove(){U.move=null;render()}
 function acceptMove(){const d=U.move.data;const keep=D?{lastBackup:D.lastBackup,a2hsDone:D.a2hsDone}:{};D={...d,...keep};U=U0();save();render()}
 function renderMove(){
   const M=U.move;if(!M)return "";
-  if(M.mode==="paste")return `<div class="modal-bg mv" onclick="if(event.target===this)closeMove()"><div class="modal"><h2>Load a bank from another device</h2>
-    <div class="sub" style="font-size:13px;color:var(--n500);margin-top:6px;line-height:1.5">On the other device: &#9881; Settings &rarr; Move to another device &rarr; Create link. Then paste it here.</div>
+  if(M.mode==="paste")return `<div class="modal-bg mv" onclick="if(event.target===this)closeMove()"><div class="modal"><h2>Load from another device</h2>
+    <div class="sub" style="font-size:13px;color:var(--n500);margin-top:6px;line-height:1.5">On the device that has the bank you want: &#9881; Settings &rarr; <b>Send this bank</b> &rarr; Copy. Then paste it here.</div>
     <textarea class="inp" id="mvPaste" style="margin-top:14px;min-height:110px;font-size:12px" placeholder="https://…/family-bank/#move=…">${esc(M.val||"")}</textarea>
     ${M.err?`<div class="mv-err">${esc(M.err)}</div>`:""}
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closeMove()">Cancel</button><button class="btn btn-primary" onclick="pasteLoad()">Continue</button></div></div></div>`;
@@ -485,7 +508,7 @@ function drawChart(canvas,cfg){
   canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
   const pad={t:14,r:16,b:28,l:62},pW=W-pad.l-pad.r,pH=H-pad.t-pad.b;
   let yMax=0;cfg.layers.forEach(L=>{(L.pts||L.upper||[]).forEach(p=>{if(p.y>yMax)yMax=p.y})});
-  yMax=niceMax(yMax*1.04);
+  yMax=niceMax(Math.max(yMax,cfg.yTop||0)*1.04);
   const xOf=x=>pad.l+((x-cfg.xMin)/((cfg.xMax-cfg.xMin)||1))*pW, yOf=y=>pad.t+pH-(y/yMax)*pH;
   // grid + y labels
   ctx.font="11px -apple-system,system-ui,sans-serif";ctx.lineWidth=1;
@@ -620,6 +643,7 @@ function renderGrow(v){
     ${U.market?`<div class="legend"><span><i style="background:#2563EB"></i>Real market from ${mk.startYear}</span><span><i class="dash"></i>Smooth ${fmtPct(v.rate)}</span></div>
       <div class="caption">If ${esc(v.k.name)} had started in <b>${mk.startYear}</b>: worst year was <span class="bad">${mk.worst.year} (${mk.worst.ret.toFixed(0)}%)</span>. It still ended at <b>${fmt(mk.end)}</b> vs ${fmt(smoothEnd)} on the smooth line. Some stretches do better, some worse — that's why we say "about ${fmtPct(SP_CAGR)}."</div>
       <div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="shuffle()">&#x21bb; Try a different start year</button></div>`:""}
+    ${!U.spend&&!U.market?`<div class="watch"><button class="btn btn-soft btn-sm" onclick="watchGrow()">&#9654; Watch it grow</button></div>`:""}
     ${U.spend?`<div class="legend"><span><i style="background:#10B981"></i>What you keep</span><span><i style="background:#EF4444;opacity:.7"></i>Erased by spending</span></div>`:""}
   </div>
 
@@ -730,11 +754,11 @@ function renderSettings(){
       <div class="presets">${PRESETS.map(p=>`<button class="preset ${Math.abs(p.r-D.rate)<1e-9?"on":""}" onclick="setRate(${p.r})">${p.l}</button>`).join("")}<button class="preset ${isPreset?"":"on"}" onclick="document.getElementById('sRate').focus()">Custom</button></div>
       <div class="rate-row"><input class="inp" id="sRate" type="number" inputmode="decimal" step="0.5" min="0" max="50" value="${pct1(D.rate)}" onchange="setRate(parseFloat(this.value)/100)"><span style="font-size:14px;color:var(--n500)">% per year</span></div></div>
 
-    <div class="sect"><h3>Kids</h3><div class="hint">Saved as a birthday month, so ages keep up on their own.</div>
+    <div class="sect"><h3>Kids</h3><div class="hint">Ages count up on their own from each birthday.</div>
       <div style="margin-top:10px">${D.kids.map((k,i)=>`<div class="kid-row2"><div><div class="lbl">Name</div><input class="inp" value="${esc(k.name)}" onchange="D.kids[${i}].name=this.value.trim()||'Kid';save()"></div>
-        <div><div class="lbl">Birthday month &middot; age ${Math.floor(ageNow(k.born))}</div><input class="inp" type="month" value="${k.born}" max="${todayISO().slice(0,7)}" onchange="if(this.value){D.kids[${i}].born=this.value;save();render()}"></div>
+        <div><div class="lbl">Birthday &middot; age ${Math.floor(ageNow(k.born))}</div>${bornSelects("kb_m"+i,"kb_y"+i,k.born,`setBorn(${i})`)}</div>
         <button class="icon-btn" onclick="removeKid(${i})" title="Remove">&times;</button></div>`).join("")}</div>
-      <div class="newkid"><div><div class="lbl">Add a kid</div><input class="inp" id="nkName" placeholder="Name"></div><div><div class="lbl">Age</div><input class="inp" id="nkAge" type="number" inputmode="numeric" min="0" max="25" placeholder="5"></div><button class="btn btn-soft" style="height:42px" onclick="addKid()">+ Add</button></div></div>
+      <div class="newkid"><div><div class="lbl">Add a kid</div><input class="inp" id="nkName" placeholder="Name"></div><div><div class="lbl">Birthday</div>${bornSelects("nk_m","nk_y","")}</div><button class="btn btn-soft" style="height:42px" onclick="addKid()">+ Add</button></div></div>
 
     <div class="sect"><h3>Milestone ages</h3><div class="hint">The ages shown on the Grow tab. Pick one as the goal — it's the number on the hero card and on every purchase receipt.</div>
       <div class="miles-row">${[0,1,2,3,4].map(i=>`<input class="inp" type="number" inputmode="numeric" min="1" max="100" value="${D.miles[i]??""}" onchange="setMile(${i},this.value)">`).join("")}</div>
@@ -746,9 +770,9 @@ function renderSettings(){
     <div class="sect"><h3>Share</h3><div class="hint">Send this link to another family. They'll get their own setup screen; nothing of yours is shared.</div>
       <div class="sharebox"><input class="inp" readonly value="${esc(url)}" onclick="this.select()"><button class="btn btn-ghost btn-sm" onclick="copyLink(this)">Copy</button></div></div>
 
-    <div class="sect"><h3>Move to another device</h3><div class="hint">Makes a link that carries your whole bank. Open it on the other phone or computer (or paste it into the app there) and it loads. It's a copy, not a sync &mdash; use one device as "the bank" and send a fresh link whenever you switch.</div>
-      ${U.moveLink?`<div class="movebox"><input class="inp" id="mvLink" readonly value="${esc(U.moveLink)}" onclick="this.select()"><div class="row2"><button class="btn btn-primary btn-sm" style="flex:1" onclick="shareMove()">Send&hellip;</button><button class="btn btn-ghost btn-sm" style="flex:1" id="mvCopy" onclick="copyMove()">Copy</button></div><div class="movewarn">Anyone with this link can see and load your bank. Send it only to yourself or your spouse.</div></div>`
-        :`<div class="actions"><button class="btn btn-soft btn-sm" onclick="makeMoveLink()">Create link</button><button class="btn btn-ghost btn-sm" onclick="openPaste()">Paste a link from another device</button></div>`}</div>
+    <div class="sect"><h3>Sync with your other devices</h3><div class="hint">Phone and computer both set up? Make one match the other: <b>Send</b> this bank as a link, then on the other device tap <b>Load from another device</b> and paste it. Loading replaces what's there with an exact copy.</div>
+      ${U.moveLink?`<div class="movebox"><input class="inp" id="mvLink" readonly value="${esc(U.moveLink)}" onclick="this.select()"><div class="row2"><button class="btn btn-primary btn-sm" style="flex:1" onclick="shareMove()">Send&hellip;</button><button class="btn btn-ghost btn-sm" style="flex:1" id="mvCopy" onclick="copyMove()">Copy</button></div><div class="movewarn">On the other device, open this link &mdash; or in the Home Screen app tap &#9881; &rarr; <b>Load from another device</b> and paste it. Anyone with the link can see your bank, so send it only to yourself or your spouse.</div></div>`
+        :`<div class="actions"><button class="btn btn-primary btn-sm" onclick="makeMoveLink()">Send this bank</button><button class="btn btn-soft btn-sm" onclick="openPaste()">Load from another device</button></div>`}</div>
 
     <div class="sect"><h3>Your data</h3><div class="hint">Everything lives in this browser only. Export a backup file now and then.</div>
       <div class="actions"><button class="btn btn-soft btn-sm" onclick="exportData()">Export backup</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import</button><button class="btn btn-ghost btn-sm" style="color:var(--r600);margin-left:auto" onclick="resetAll()">Start over</button></div></div>
@@ -758,33 +782,35 @@ function renderSettings(){
 
 // ── SETUP ──
 function renderSetup(root){
-  if(!U.setupKids)U.setupKids=[{name:"",age:"",bal:""}];
+  if(!U.setupKids)U.setupKids=[{name:"",born:"",bal:""}];
   root.innerHTML=`<div class="setup-bg"><div class="setup"><div class="brand">Family Bank</div><h1>Set up your bank</h1>
     <div class="sub">A bank for your kids that pays interest, shows them the snowball, and tells them what every purchase really costs.</div>
-    <div class="field"><label>Family name</label><input class="inp" id="sFamily" placeholder="Smith" value="${esc(U.setupFamily||"")}"></div>
+    <div class="field"><label>Family name</label><input class="inp" id="sFamily" placeholder="Doe" value="${esc(U.setupFamily||"")}"></div>
     <div class="field"><label>Kids</label><div id="sKids"></div><button class="btn btn-soft btn-block btn-sm" onclick="setupAddKid()">+ Add another</button></div>
     <div class="field"><label>What should the bank pay?</label><div class="presets" style="margin-top:0">${PRESETS.map(p=>`<button class="preset ${Math.abs(p.r-(U.setupRate??.10))<1e-9?"on":""}" onclick="setupRate(${p.r})">${p.l}</button>`).join("")}</div><div class="hint" style="font-size:12px;color:var(--n400);margin-top:6px;line-height:1.45">A year's growth on every dollar. The stock market has averaged about 10%. You can change it any time in Settings.</div></div>
     <button class="btn btn-primary btn-block" style="margin-top:22px;padding:14px;font-size:16px" onclick="finishSetup()">Open the bank</button>
     <div class="note">Everything saves in this browser automatically.<br>No account, no server, nothing leaves your device.</div>
     ${isIOS()&&!isStandalone()?`<div class="ios-tip">&#128241; <b>On iPhone:</b> tap Share &rarr; <b>Add to Home Screen</b> first, then open it from your Home Screen and set up there. Safari can clear websites you haven't opened in a week; the Home Screen app keeps your bank.</div>`:""}
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="loadDemo()">Try it with sample data</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import a backup</button><button class="btn btn-ghost btn-sm" onclick="openPaste()">I have a move link</button></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="loadDemo()">Try it with sample data</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import a backup</button><button class="btn btn-ghost btn-sm" onclick="openPaste()">Load from another device</button></div>
   </div></div>`;
   renderSetupKids();
 }
 function renderSetupKids(){
   const el=document.getElementById("sKids");if(!el)return;
-  el.innerHTML=U.setupKids.map((k,i)=>`<div class="kid-row"><div><div class="lbl">Name</div><input class="inp" id="sk_n${i}" value="${esc(k.name)}" placeholder="Caroline"></div>
-    <div><div class="lbl">Age</div><input class="inp" id="sk_a${i}" type="number" inputmode="numeric" value="${esc(k.age)}" placeholder="6" min="0" max="25"></div>
-    <div><div class="lbl">Starting $</div><input class="inp" id="sk_b${i}" type="number" inputmode="decimal" value="${esc(k.bal)}" placeholder="100" min="0"></div>
+  el.innerHTML=U.setupKids.map((k,i)=>`<div class="kid-row"><div><div class="lbl">Name</div><input class="inp" id="sk_n${i}" value="${esc(k.name)}" placeholder="Jane"></div>
+    <div><div class="lbl">Birthday</div>${bornSelects("sk_m"+i,"sk_y"+i,k.born)}</div>
+    <div><div class="lbl">Start $</div><input class="inp" id="sk_b${i}" type="number" inputmode="decimal" value="${esc(k.bal)}" placeholder="100" min="0"></div>
     ${U.setupKids.length>1?`<button class="icon-btn" onclick="setupRemoveKid(${i})">&times;</button>`:"<div></div>"}</div>`).join("");
 }
-function setupSync(){U.setupFamily=(document.getElementById("sFamily")||{}).value||"";U.setupKids=U.setupKids.map((k,i)=>({name:(document.getElementById("sk_n"+i)||{}).value||"",age:(document.getElementById("sk_a"+i)||{}).value||"",bal:(document.getElementById("sk_b"+i)||{}).value||""}))}
+function setupSync(){U.setupFamily=(document.getElementById("sFamily")||{}).value||"";U.setupKids=U.setupKids.map((k,i)=>({name:(document.getElementById("sk_n"+i)||{}).value||"",born:readBorn("sk_m"+i,"sk_y"+i),bal:(document.getElementById("sk_b"+i)||{}).value||""}))}
 function setupRate(r){setupSync();U.setupRate=r;renderSetup(document.getElementById("root"))}
-function setupAddKid(){setupSync();U.setupKids.push({name:"",age:"",bal:""});renderSetupKids()}
+function setupAddKid(){setupSync();U.setupKids.push({name:"",born:"",bal:""});renderSetupKids()}
 function setupRemoveKid(i){setupSync();U.setupKids.splice(i,1);renderSetupKids()}
 function finishSetup(){
   setupSync();
-  const kids=U.setupKids.filter(k=>k.name.trim()).map((k,i)=>{const bal=parseFloat(k.bal)||0;return {id:uid("k"),name:k.name.trim(),born:bornFromAge(parseInt(k.age)||6),
+  const named=U.setupKids.filter(k=>k.name.trim());
+  const noBday=named.find(k=>!k.born);if(noBday){alert(`Pick ${noBday.name.trim()}'s birthday month and year — it keeps their age up to date.`);return}
+  const kids=named.map((k,i)=>{const bal=parseFloat(k.bal)||0;return {id:uid("k"),name:k.name.trim(),born:k.born,
     txns:bal>0?[{id:uid("t"),date:todayISO(),desc:"Opening deposit",amt:bal,type:"earn",seq:0}]:[]}});
   if(!kids.length){alert("Add at least one kid.");return}
   D={v:3,family:(U.setupFamily||"").trim()||"Our",rate:U.setupRate??.10,miles:DEFAULT_MILES.slice(),goal:30,earn:"",kids};
@@ -821,6 +847,10 @@ function drawGrow(v){
             {type:"band",upper:smoothD.map(p=>({x:p.age,y:p.v})),lower:keptD.map(p=>({x:p.age,y:p.v})),color:"#EF4444",grad:["rgba(239,68,68,.22)","rgba(239,68,68,.04)"]}];
     tip=i=>{const s=smooth[i],k=kept[i];return `<b>Age ${Math.floor(s.age)}</b><div class="l"><span>If you keep it</span><span style="color:#059669;font-weight:700">${fmt(s.v)}</span></div><div class="l"><span>If you spend ${fmt(U.spendAmt)}</span><span>${fmt(k.v)}</span></div><div class="l"><span style="color:#DC2626">Erased</span><span style="color:#DC2626;font-weight:700">${fmt(s.v-k.v)}</span></div>`};
     drawChart(c,{xLabel:"Age",xMin:v.age,xMax:v.age+v.H,layers,xTicks,hoverPts,tip});
+  }else if(U.animP!=null){
+    const cut=v.age+v.H*U.animP,pts=smoothD.filter(p=>p.age<=cut).map(p=>({x:p.age,y:p.v}));const last=pts[pts.length-1];
+    drawChart(c,{xLabel:"Age",xMin:v.age,xMax:v.age+v.H,yTop:smoothD[smoothD.length-1].v,layers:[{type:"area",pts,color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]}],xTicks,
+      marks:[{x:last.x,y:last.y,text:`Age ${Math.floor(last.x)}: ${fmt(last.y)}`,color:"#047857"}]});
   }else{
     layers=[{type:"area",pts:smoothD.map(p=>({x:p.age,y:p.v})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]}];
     tip=i=>{const s=smooth[i];return `<b>Age ${Math.floor(s.age)}</b><div class="l"><span>Balance</span><span style="color:#059669;font-weight:700">${fmt(s.v)}</span></div><div class="l"><span>Growth</span><span>+${fmt(s.v-v.bal)}</span></div>`};
@@ -833,7 +863,7 @@ function drawHist(v){
   const path=historyPath(v.k.txns,v.rate,v.today);
   if(!path.length){const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);return}
   const xMin=path[0].t,xMax=path[path.length-1].t,span=xMax-xMin;
-  const xTicks=[];const nT=Math.max(2,Math.min(6,Math.round(span/(45*DAY)),Math.floor(((c.clientWidth||600)-80)/64)));for(let i=0;i<=nT;i++){const tt=xMin+span*i/nT;xTicks.push({x:tt,label:span>400*DAY?String(new Date(tt).getFullYear()):fmtMonYr(tt)})}
+  const xTicks=[];const nT=Math.max(2,Math.min(6,Math.round(span/(45*DAY)),Math.floor(((c.clientWidth||600)-80)/64)));for(let i=0;i<=nT;i++){const tt=xMin+span*i/nT;xTicks.push({x:tt,label:span>400*DAY?String(new Date(tt).getFullYear()):span<90*DAY?(new Date(tt).getMonth()+1)+"/"+new Date(tt).getDate():fmtMonYr(tt)})}
   const dots=sortTx(v.k.txns).filter(tx=>tx.date>=path[0].iso).map(tx=>{const tt=parseD(tx.date).getTime();const b=simulate(v.k.txns,v.rate,tx.date).balance;return {x:tt,y:b,color:tx.type==="earn"?"#059669":"#EF4444",tx}});
   const layers=[{type:"line",pts:path.map(p=>({x:p.t,y:p.ghost})),color:"#9CA3AF",dash:[5,4],width:1.5},
                 {type:"area",pts:path.map(p=>({x:p.t,y:p.bal})),color:"#10B981",grad:["rgba(16,185,129,.22)","rgba(16,185,129,.01)"]}];
@@ -859,6 +889,12 @@ function drawBump(v){
 // ═══════════════════════════════════════════════════════════
 //  ACTIONS
 // ═══════════════════════════════════════════════════════════
+function watchGrow(){
+  if(U.animP!=null)return;const v=view(),t0=performance.now(),dur=Math.min(7000,1500+v.H*170);
+  const step=now=>{const p=Math.min(1,(now-t0)/dur);U.animP=1-Math.pow(1-p,1.6);if(U.tab!=="grow"||U.spend||U.market){U.animP=null;return}
+    drawGrow(view());if(p<1)requestAnimationFrame(step);else{U.animP=null;drawGrow(view())}};
+  U.animP=0;requestAnimationFrame(step);
+}
 function go(tab){U.tab=tab;U.form=false;U.editId=null;U.playing=false;render()}
 function pickKid(i){U.kid=i;U.spend=false;U.market=false;U.mkStart=null;U.form=false;U.editId=null;U.snowYr=1;U.playing=false;render()}
 function toggleSpend(){U.spend=!U.spend;if(U.spend)U.market=false;render()}
@@ -889,6 +925,7 @@ function addTx(){
   const e=U.editId&&k.txns.find(t=>t.id===U.editId);
   if(e)Object.assign(e,rec);else k.txns.push({id:uid("t"),...rec,seq:k.txns.length});
   U.form=false;U.editId=null;save();render();
+  if(!e&&rec.type==="earn"){const a=ageAt(k.born,date);const at=erasedAt(rec.amt,D.rate,a,v.goal);celebrate(`+${fmt(rec.amt)} for ${esc(k.name)}!`,at>0?`Left alone, that becomes <b>${fmt(at)}</b> by age ${v.goal}.`:"")}
 }
 function delTx(id){const k=kid();const t=k.txns.find(x=>x.id===id);if(!t)return;if(!confirm(`Remove "${t.desc||(t.type==="earn"?"Earned":"Spent")}" (${fmt(t.amt)})?`))return;k.txns=k.txns.filter(x=>x.id!==id);if(U.editId===id){U.editId=null;U.form=false}save();render()}
 function snow(d){U.playing=false;U.snowYr=Math.max(0,Math.min(30,U.snowYr+d));render()}
@@ -902,7 +939,8 @@ function openSettings(focus){U.settings=true;U.moveLink="";U.settingsFocus=focus
 function closeSettings(){if(!D.kids.length){alert("Add at least one kid first.");return}U.settings=false;U.kid=Math.min(U.kid,D.kids.length-1);render()}
 function setRate(r){if(!(r>=0&&r<=.5)){alert("Pick a rate between 0% and 50%.");return}D.rate=r;U.mkStart=null;save();render()}
 function setMile(i,val){const n=parseInt(val);const miles=D.miles.slice();if(n>0)miles[i]=n;else miles.splice(i,1);D.miles=[...new Set(miles.filter(x=>x>0))].sort((a,b)=>a-b);if(!D.miles.includes(D.goal))D.goal=D.miles[D.miles.length-1]||30;save();render()}
-function addKid(){const name=((document.getElementById("nkName")||{}).value||"").trim();if(!name){alert("Type the new kid's name first.");return}const age=parseInt((document.getElementById("nkAge")||{}).value);D.kids.push({id:uid("k"),name,born:bornFromAge(isNaN(age)?6:age),txns:[]});save();render()}
+function addKid(){const name=((document.getElementById("nkName")||{}).value||"").trim();if(!name){alert("Type the new kid's name first.");return}const born=readBorn("nk_m","nk_y");if(!born){alert(`Pick ${name}'s birthday month and year.`);return}D.kids.push({id:uid("k"),name,born,txns:[]});save();render()}
+function setBorn(i){const b=readBorn("kb_m"+i,"kb_y"+i);if(b){D.kids[i].born=b;save();render()}}
 function removeKid(i){const k=D.kids[i];if(!confirm(`Remove ${k.name} and all of their history? Export a backup first if you're not sure.`))return;D.kids.splice(i,1);if(U.kid>=D.kids.length)U.kid=Math.max(0,D.kids.length-1);save();render()}
 function copyLink(btn){const url=location.href.split("#")[0].split("?")[0];(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>{btn.textContent="Copied";setTimeout(()=>btn.textContent="Copy",1500)}).catch(()=>{const i=btn.previousElementSibling;i.select();document.execCommand("copy");btn.textContent="Copied";setTimeout(()=>btn.textContent="Copy",1500)})}
 
@@ -913,15 +951,15 @@ function demoData(){
   const y=new Date().getFullYear(),d=(m,dd,yo=0)=>`${y-yo}-${String(m).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
   const today=todayISO();const clampD=s=>s>today?today:s;
   const T=(date,desc,amt,type,seq)=>({id:uid("t"),date:clampD(date),desc,amt,type,seq});
-  return {v:3,family:"Sample",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,
+  return {v:3,family:"Doe",rate:.10,miles:DEFAULT_MILES.slice(),goal:30,
     earn:"A on a report card — $25\nB — $10\nDid something without being asked — $15\nDid the right thing when it was hard — $10",
     kids:[
-      {id:uid("k"),name:"Caroline",born:bornFromAge(6.5),txns:[
+      {id:uid("k"),name:"Jane",born:bornFromAge(6.5),txns:[
         T(d(10,15,1),"Opening deposit",100,"earn",0),T(d(12,20,1),"Report card — 3 A's",75,"earn",1),T(d(2,3),"Cleaned the garage without being asked",15,"earn",2),
         T(d(3,14),"Lego set",40,"spend",3),T(d(5,22),"Report card — 4 A's",100,"earn",4),T(d(7,4),"Water balloons",12,"spend",5),
         T(d(8,30),"Told the truth about the window",10,"earn",6),T(d(10,2),"Report card — 3 A's",75,"earn",7)]},
-      {id:uid("k"),name:"Liv",born:bornFromAge(4.3),txns:[
-        T(d(10,15,1),"Opening deposit",100,"earn",0),T(d(1,10),"Shared with her brother all week",10,"earn",1),T(d(4,20),"Stuffed animal",18,"spend",2),T(d(5,22),"Learned to swim across the pool",25,"earn",3),T(d(9,12),"Helped Grandma in the garden",10,"earn",4)]}
+      {id:uid("k"),name:"John",born:bornFromAge(4.3),txns:[
+        T(d(10,15,1),"Opening deposit",100,"earn",0),T(d(1,10),"Shared with his sister all week",10,"earn",1),T(d(4,20),"Stuffed animal",18,"spend",2),T(d(5,22),"Learned to swim across the pool",25,"earn",3),T(d(9,12),"Helped Grandma in the garden",10,"earn",4)]}
     ]};
 }
 function loadDemo(){D=demoData();U.kid=0;U.tab="grow";save();render()}
