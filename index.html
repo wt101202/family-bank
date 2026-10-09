@@ -169,6 +169,14 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
 .kid-row2 .inp{padding:10px 12px}
 .newkid{display:grid;grid-template-columns:1.3fr .6fr auto;gap:8px;align-items:end;margin-top:6px}
 .newkid .inp{padding:10px 12px}
+.modal-bg.mv{z-index:1100}
+.movebox{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.movebox .row2{display:flex;gap:8px}
+.movebox .inp{font-size:12px;color:var(--n500)}
+.movewarn{font-size:12px;color:var(--n500);line-height:1.45}
+.mv-sum{margin-top:12px;background:var(--g50);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.6;color:var(--n700)}
+.mv-sum b{color:var(--n900)}
+.mv-err{margin-top:10px;font-size:13px;color:var(--r600);font-weight:700}
 .form h4{font-size:13px;font-weight:800;color:var(--n900);margin-bottom:10px}
 .empty-state{text-align:center;padding:36px 10px;color:var(--n400);font-size:14px;line-height:1.5}
 .form{background:var(--n50);border-radius:16px;padding:18px;margin-top:14px;border:1px solid var(--n100)}
@@ -411,9 +419,59 @@ function renderNudges(){
     out+=`<div class="nudge backup"><div>&#128190; <b>Back up your bank.</b> It lives only on this phone. Last backup: ${ago}.</div><div class="acts"><button class="btn btn-primary btn-sm" onclick="exportData()">Back up</button><button class="btn btn-ghost btn-sm" onclick="D.snooze=todayISO();save();render()">Later</button></div></div>`;
   }
   if(isIOS()&&!isStandalone()&&!D.a2hsDone){
-    out+=`<div class="nudge ios"><div>&#128241; <b>On iPhone, keep it on your Home Screen.</b> Safari can clear websites you don't open for a week. Tap <b>Back up</b>, then Share &rarr; <b>Add to Home Screen</b>, open it from there and tap <b>Import a backup</b>.</div><div class="acts"><button class="btn btn-ghost btn-sm" onclick="D.a2hsDone=true;save();render()">Got it</button></div></div>`;
+    out+=`<div class="nudge ios"><div>&#128241; <b>On iPhone, keep it on your Home Screen.</b> Safari can clear websites you don't open for a week. In &#9881; Settings tap <b>Create link</b> and <b>Copy</b>. Then Share &rarr; <b>Add to Home Screen</b>, open it from there, tap <b>I have a move link</b> and paste.</div><div class="acts"><button class="btn btn-ghost btn-sm" onclick="D.a2hsDone=true;save();render()">Got it</button></div></div>`;
   }
   return out;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MOVE LINK: the whole bank packed into a link (after the #, so it never reaches a server)
+// ═══════════════════════════════════════════════════════════
+const b64u=bytes=>{let s="";for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
+const unb64u=str=>{const s=atob(str.replace(/-/g,"+").replace(/_/g,"/"));const b=new Uint8Array(s.length);for(let i=0;i<s.length;i++)b[i]=s.charCodeAt(i);return b};
+async function encodeMove(data){
+  const {lastBackup,snooze,a2hsDone,...keep}=data;          // per-device reminders stay behind
+  const bytes=new TextEncoder().encode(JSON.stringify(keep));
+  if(typeof CompressionStream==="function"){const gz=new Uint8Array(await new Response(new Response(bytes).body.pipeThrough(new CompressionStream("gzip"))).arrayBuffer());return "z"+b64u(gz)}
+  return "j"+b64u(bytes);
+}
+async function decodeMove(input){
+  let code=String(input||"").trim();const m=code.match(/move=([A-Za-z0-9_-]+)/);if(m)code=m[1];
+  if(!/^[zj][A-Za-z0-9_-]{8,}$/.test(code))throw new Error("not a move code");
+  let bytes=unb64u(code.slice(1));
+  if(code[0]==="z"){if(typeof DecompressionStream!=="function")throw new Error("This browser is too old to open the link. Use Export/Import instead.");bytes=new Uint8Array(await new Response(new Response(bytes).body.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer())}
+  const d=migrate(JSON.parse(new TextDecoder().decode(bytes)));
+  if(!d||!Array.isArray(d.kids)||!d.kids.length)throw new Error("no kids in it");
+  return d;
+}
+const moveURL=code=>location.href.split("#")[0].split("?")[0]+"#move="+code;
+async function makeMoveLink(){try{U.moveLink=moveURL(await encodeMove(D))}catch(e){U.moveLink="";alert("Couldn't make the link on this browser. Use Export backup instead.")}render()}
+function shareMove(){if(navigator.share)navigator.share({title:(D.family||"Our")+" Family Bank",text:"Open this to load our Family Bank on this device:",url:U.moveLink}).catch(()=>{});else copyMove()}
+function copyMove(){const btn=document.getElementById("mvCopy");(navigator.clipboard?navigator.clipboard.writeText(U.moveLink):Promise.reject()).then(()=>{if(btn)btn.textContent="Copied"}).catch(()=>{const i=document.getElementById("mvLink");if(i){i.select();document.execCommand("copy")}if(btn)btn.textContent="Copied"})}
+function openPaste(){U.move={mode:"paste",err:""};render();const t=document.getElementById("mvPaste");if(t)t.focus()}
+async function pasteLoad(){const t=document.getElementById("mvPaste");try{const d=await decodeMove(t?t.value:"");U.move={mode:"confirm",data:d}}catch(e){U.move={mode:"paste",err:/too old/.test(e.message)?e.message:"That doesn't look like a Family Bank move link. Copy the whole link and try again.",val:t?t.value:""}}render()}
+function closeMove(){U.move=null;render()}
+function acceptMove(){const d=U.move.data;const keep=D?{lastBackup:D.lastBackup,a2hsDone:D.a2hsDone}:{};D={...d,...keep};U=U0();save();render()}
+function renderMove(){
+  const M=U.move;if(!M)return "";
+  if(M.mode==="paste")return `<div class="modal-bg mv" onclick="if(event.target===this)closeMove()"><div class="modal"><h2>Load a bank from another device</h2>
+    <div class="sub" style="font-size:13px;color:var(--n500);margin-top:6px;line-height:1.5">On the other device: &#9881; Settings &rarr; Move to another device &rarr; Create link. Then paste it here.</div>
+    <textarea class="inp" id="mvPaste" style="margin-top:14px;min-height:110px;font-size:12px" placeholder="https://…/family-bank/#move=…">${esc(M.val||"")}</textarea>
+    ${M.err?`<div class="mv-err">${esc(M.err)}</div>`:""}
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeMove()">Cancel</button><button class="btn btn-primary" onclick="pasteLoad()">Continue</button></div></div></div>`;
+  if(M.mode==="error")return `<div class="modal-bg mv"><div class="modal"><h2>That link didn't open</h2><div class="mv-err">${esc(M.err)}</div><div class="modal-foot"><button class="btn btn-primary" onclick="closeMove()">OK</button></div></div></div>`;
+  const d=M.data,n=d.kids.reduce((a,k)=>a+k.txns.length,0),last=d.kids.flatMap(k=>k.txns.map(t=>t.date)).sort().pop();
+  const bal=d.kids.map(k=>`${esc(k.name)} ${fmt(Math.max(0,simulate(k.txns,d.rate,todayISO()).balance))}`).join(" &middot; ");
+  return `<div class="modal-bg mv"><div class="modal"><h2>Load the ${esc(d.family||"Our")} Family Bank?</h2>
+    <div class="mv-sum"><b>${bal}</b><br>${n} entr${n===1?"y":"ies"}${last?`, latest ${fmtDay(last)}/${fmtYr(last)}`:""} &middot; ${fmtPct(d.rate)} a year</div>
+    ${D?`<div class="mv-err" style="font-weight:600">This replaces the ${esc(D.family||"Our")} bank on this device (${D.kids.map(k=>esc(k.name)).join(", ")}). Export a backup first if you're not sure.</div>`:""}
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeMove()">Cancel</button><button class="btn btn-primary" onclick="acceptMove()">Load it</button></div></div></div>`;
+}
+async function checkIncoming(){
+  const m=location.hash.match(/move=([A-Za-z0-9_-]+)/);if(!m)return;
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+  try{U.move={mode:"confirm",data:await decodeMove(m[1])}}catch(e){U.move={mode:"error",err:/too old/.test(e.message)?e.message:"The link looks incomplete. Ask for it again, and copy the whole thing."}}
+  render();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -509,7 +567,7 @@ function view(){
 // ═══════════════════════════════════════════════════════════
 function render(){
   const root=document.getElementById("root");
-  if(!D){renderSetup(root);return}
+  if(!D){renderSetup(root);if(U.move)root.insertAdjacentHTML("beforeend",renderMove());return}
   if(!D.kids.length){U.settings=true}
   if(U.kid>=D.kids.length)U.kid=0;
   const v=D.kids.length?view():null;
@@ -525,7 +583,7 @@ function render(){
     ${v?(U.tab==="grow"?renderGrow(v):U.tab==="history"?renderHistory(v):renderLearn(v)):""}
     <div class="foot">${esc(D.family||"Family")} Bank · ${fmtPct(D.rate)} a year · Data lives only in this browser — <a href="#" onclick="exportData();return false">export a backup</a></div>
   </div>
-  ${U.settings?renderSettings():""}`;
+  ${U.settings&&!U.move?renderSettings():""}${renderMove()}`;
   // setTimeout, not requestAnimationFrame: rAF is paused in background tabs, so charts
   // would stay blank for anyone who opens the link in a tab they haven't switched to yet.
   setTimeout(()=>{if(v)afterRender(v)},0);
@@ -688,7 +746,11 @@ function renderSettings(){
     <div class="sect"><h3>Share</h3><div class="hint">Send this link to another family. They'll get their own setup screen; nothing of yours is shared.</div>
       <div class="sharebox"><input class="inp" readonly value="${esc(url)}" onclick="this.select()"><button class="btn btn-ghost btn-sm" onclick="copyLink(this)">Copy</button></div></div>
 
-    <div class="sect"><h3>Your data</h3><div class="hint">Everything lives in this browser only. Export to back up or move to another device.</div>
+    <div class="sect"><h3>Move to another device</h3><div class="hint">Makes a link that carries your whole bank. Open it on the other phone or computer (or paste it into the app there) and it loads. It's a copy, not a sync &mdash; use one device as "the bank" and send a fresh link whenever you switch.</div>
+      ${U.moveLink?`<div class="movebox"><input class="inp" id="mvLink" readonly value="${esc(U.moveLink)}" onclick="this.select()"><div class="row2"><button class="btn btn-primary btn-sm" style="flex:1" onclick="shareMove()">Send&hellip;</button><button class="btn btn-ghost btn-sm" style="flex:1" id="mvCopy" onclick="copyMove()">Copy</button></div><div class="movewarn">Anyone with this link can see and load your bank. Send it only to yourself or your spouse.</div></div>`
+        :`<div class="actions"><button class="btn btn-soft btn-sm" onclick="makeMoveLink()">Create link</button><button class="btn btn-ghost btn-sm" onclick="openPaste()">Paste a link from another device</button></div>`}</div>
+
+    <div class="sect"><h3>Your data</h3><div class="hint">Everything lives in this browser only. Export a backup file now and then.</div>
       <div class="actions"><button class="btn btn-soft btn-sm" onclick="exportData()">Export backup</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import</button><button class="btn btn-ghost btn-sm" style="color:var(--r600);margin-left:auto" onclick="resetAll()">Start over</button></div></div>
     <div class="modal-foot"><button class="btn btn-primary" onclick="closeSettings()">Done</button></div>
   </div></div>`;
@@ -705,7 +767,7 @@ function renderSetup(root){
     <button class="btn btn-primary btn-block" style="margin-top:22px;padding:14px;font-size:16px" onclick="finishSetup()">Open the bank</button>
     <div class="note">Everything saves in this browser automatically.<br>No account, no server, nothing leaves your device.</div>
     ${isIOS()&&!isStandalone()?`<div class="ios-tip">&#128241; <b>On iPhone:</b> tap Share &rarr; <b>Add to Home Screen</b> first, then open it from your Home Screen and set up there. Safari can clear websites you haven't opened in a week; the Home Screen app keeps your bank.</div>`:""}
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="loadDemo()">Try it with sample data</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import a backup</button></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="loadDemo()">Try it with sample data</button><button class="btn btn-ghost btn-sm" onclick="importData()">Import a backup</button><button class="btn btn-ghost btn-sm" onclick="openPaste()">I have a move link</button></div>
   </div></div>`;
   renderSetupKids();
 }
@@ -836,7 +898,7 @@ function playSnow(){
   const tick=()=>{if(!U.playing||U.tab!=="learn")return;U.snowYr++;if(U.snowYr>=30){U.snowYr=30;U.playing=false}render();if(U.playing)setTimeout(tick,600)};
   setTimeout(tick,600);
 }
-function openSettings(focus){U.settings=true;U.settingsFocus=focus||null;render()}
+function openSettings(focus){U.settings=true;U.moveLink="";U.settingsFocus=focus||null;render()}
 function closeSettings(){if(!D.kids.length){alert("Add at least one kid first.");return}U.settings=false;U.kid=Math.min(U.kid,D.kids.length-1);render()}
 function setRate(r){if(!(r>=0&&r<=.5)){alert("Pick a rate between 0% and 50%.");return}D.rate=r;U.mkStart=null;save();render()}
 function setMile(i,val){const n=parseInt(val);const miles=D.miles.slice();if(n>0)miles[i]=n;else miles.splice(i,1);D.miles=[...new Set(miles.filter(x=>x>0))].sort((a,b)=>a-b);if(!D.miles.includes(D.goal))D.goal=D.miles[D.miles.length-1]||30;save();render()}
@@ -870,9 +932,10 @@ function loadDemo(){D=demoData();U.kid=0;U.tab="grow";save();render()}
 load();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 {const h=location.hash.slice(1).split(",").filter(Boolean);
- if(h.includes("demo")&&!D){D=demoData();save()}
+ if(h.includes("demo")&&!D&&!/move=/.test(location.hash)){D=demoData();save()}
  if(D){if(h.includes("history"))U.tab="history";else if(h.includes("learn"))U.tab="learn";if(h.includes("spend")){U.spend=true}if(h.includes("market")){U.market=true}}}
 render();
+checkIncoming();
 let rT;window.addEventListener("resize",()=>{clearTimeout(rT);rT=setTimeout(()=>{if(D&&D.kids.length)afterRender(view())},120)});
 </script>
 </body>
