@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#064E3B">
 <title>Family Bank</title>
 <meta name="description" content="A bank for your kids that pays interest, shows them the snowball, and tells them what every purchase really costs.">
@@ -249,6 +249,7 @@ textarea.inp{min-height:90px;resize:vertical;line-height:1.5}
 .foot a{color:var(--n400)}
 
 @media(max-width:600px){
+  input.inp,select.inp,textarea.inp{font-size:16px}
   .nudge{flex-direction:column;align-items:stretch}
   .nudge .acts .btn{flex:1}
   .stat .k{white-space:nowrap;font-size:10.5px}
@@ -566,7 +567,7 @@ function drawChart(canvas,cfg){
   });
   (cfg.dots||[]).forEach(d=>{ctx.beginPath();ctx.arc(xOf(d.x),yOf(d.y),4,0,Math.PI*2);ctx.fillStyle=d.color;ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=1.5;ctx.stroke()});
   (cfg.marks||[]).forEach(m=>{const x=xOf(m.x),y=yOf(m.y);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=m.color;ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=2;ctx.stroke();
-    ctx.font="700 11px -apple-system,system-ui,sans-serif";ctx.fillStyle=m.color;const tw=ctx.measureText(m.text).width;let tx=x+10;if(tx+tw>W-pad.r)tx=x-10-tw;ctx.textAlign="left";ctx.fillText(m.text,tx,y+4)});
+    ctx.font="700 11px -apple-system,system-ui,sans-serif";ctx.fillStyle=m.color;const tw=ctx.measureText(m.text).width;let tx=x+10;if(tx+tw>W-pad.r)tx=x-10-tw;ctx.textAlign="left";ctx.lineJoin="round";ctx.strokeStyle="rgba(255,255,255,.92)";ctx.lineWidth=4;ctx.strokeText(m.text,tx,y+4);ctx.fillText(m.text,tx,y+4)});
   canvas._cfg={cfg,xOf,yOf,pad,W,H};
 }
 function attachHover(canvas,tipEl){
@@ -602,7 +603,7 @@ function drawSnow(canvas,rows,upto,rate){
     ctx.fillStyle=cur?"#047857":"#059669";ctx.fillRect(x,pad.t+pH-hp,w,hp);
     ctx.fillStyle=cur?"#34D399":"#6EE7B7";ctx.fillRect(x,pad.t+pH-hp-hg,w,hg);
     ctx.globalAlpha=1;
-    if(i%5===0||cur){ctx.fillStyle=cur?"#111827":"#9CA3AF";ctx.textAlign="center";ctx.font=(cur?"700 ":"")+"11px -apple-system,system-ui,sans-serif";ctx.fillText(i,x+w/2,H-8)}
+    if(cur||(i%5===0&&Math.abs(i-upto)>1)){ctx.fillStyle=cur?"#111827":"#9CA3AF";ctx.textAlign="center";ctx.font=(cur?"700 ":"")+"11px -apple-system,system-ui,sans-serif";ctx.fillText(i,x+w/2,H-8)}
   });
 }
 
@@ -659,7 +660,7 @@ function renderHero(v){
   const atGoal=grow(v.bal,v.rate,v.goal-v.age);
   return `<div class="card hero"><div class="who">${esc(v.k.name)}'s money &middot; age ${Math.floor(v.age)}</div><div class="big">${fmt(v.bal)}</div>
   <div class="split">Earned ${fmt(v.sim.put)}${v.sim.spent>0?` &middot; Spent ${fmt(v.sim.spent)}`:""} &middot; Grew <b>+${fmt(Math.max(0,v.sim.growth))}</b></div>
-  ${v.bal>0?`<div class="month">&#127793; <b>+${fmtC(v.monthInt)}</b> interest so far this month &middot; about +${fmtC(v.bal*(Math.pow(1+v.rate,1/12)-1))} a month at ${fmtPct(v.rate)}</div>`:""}
+  ${v.bal>0?`<div class="month">&#127793; ${v.monthInt>=0.01?`<b>+${fmtC(v.monthInt)}</b> interest so far this month &middot; about `:"Grows about "}<b>+${fmtC(v.bal*(Math.pow(1+v.rate,1/12)-1))}</b> a month at ${fmtPct(v.rate)}</div>`:""}
   <div class="stats"><div class="stat"><div class="k">At age ${v.goal}</div><div class="v" style="color:var(--g600)">${fmt(atGoal)}</div></div>
   <div class="stat"><div class="k">Bank pays</div><div class="v" style="color:var(--n700)">${fmtPct(v.rate)}/yr</div></div>
   <div class="stat"><div class="k">Spending has cost</div><div class="v" style="color:${v.sim.spent>0?"var(--r600)":"var(--n300)"}">${v.sim.spent>0?"-"+fmt(v.ghost.balance-v.sim.balance):"—"}</div></div></div>
@@ -714,6 +715,7 @@ function renderHistory(v){
   <div class="card"><h2>${esc(v.k.name)}'s money so far</h2><div class="sub">Every deposit, every purchase, and the growth in between</div>
     <div class="chart"><canvas id="cHist"></canvas><div class="tip" id="tHist"></div></div>
     <div class="legend"><span><i style="background:#10B981"></i>What ${esc(v.k.name)} has</span><span><i class="dash"></i>If nothing was ever spent</span><span><i style="background:#EF4444;width:8px;height:8px;border-radius:50%"></i>Purchase</span></div>
+    ${v.k.txns.length&&daysSince(sortTx(v.k.txns)[0].date)<14?`<div class="cost-line" style="color:var(--n400)">Just getting started &mdash; this chart fills in as the days go by.</div>`:""}
     ${v.sim.spent>0?`<div class="cost-line">Spending has cost <b>${fmt(costSoFar)}</b> so far — ${fmt(v.sim.spent)} spent, plus ${fmt(costSoFar-v.sim.spent)} it would have grown into by today.</div>`:""}
   </div>
 
